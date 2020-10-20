@@ -1,4 +1,4 @@
-import { React, render, ClientMock, setDefaultClient, useQuery } from "../testSuiteInitialize";
+import { React, render, cleanup, ClientMock, setDefaultClient, useQuery } from "../testSuiteInitialize";
 import { hookComponentFactory, deferred, resolveDeferred, loadingPacket, dataPacket, errorPacket, rejectDeferred, pause } from "../testUtils";
 
 let client1;
@@ -13,7 +13,12 @@ beforeEach(() => {
   [getProps, ComponentToUse] = getComponent();
 });
 
+afterEach(() => {
+  cleanup();
+});
+
 test("loading props passed", async () => {
+  client1.nextResult = deferred();
   render(<ComponentToUse a={1} unused={0} />);
   expect(getProps()).toMatchObject(loadingPacket);
 });
@@ -92,6 +97,7 @@ test("Cached data handled", async () => {
   rerender(<ComponentToUse a={1} unused={0} />);
   await pause();
   await resolveDeferred(pData, { data: { tasks: [{ id: 1 }] } });
+
   expect(getProps()).toMatchObject(dataPacket({ tasks: [{ id: 1 }] }));
   expect(client1.queriesRun).toBe(2);
 });

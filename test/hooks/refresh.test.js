@@ -17,7 +17,7 @@ beforeEach(() => {
 
 test("loading props passed initially", async () => {
   const ComponentToUse = props => {
-    const loadTasks = useQuery([LOAD_TASKS, { assignedTo: props.assignedTo }]);
+    const loadTasks = useQuery(LOAD_TASKS, { assignedTo: props.assignedTo });
     renders++;
 
     return null;
@@ -28,6 +28,7 @@ test("loading props passed initially", async () => {
   let currentRenderCount = renders;
 
   client1.forceUpdate(LOAD_TASKS);
+  await pause();
   expect(renders).toBeGreaterThan(currentRenderCount);
 
   currentRenderCount = renders;
@@ -40,10 +41,10 @@ test("force update from client mutation subscription -- string", async () => {
 
   const ComponentToUse = props => {
     const hasRun = useRef(false);
-    const { data } = useQuery([LOAD_TASKS, { assignedTo: props.assignedTo }]);
+    const { data } = useQuery(LOAD_TASKS, { assignedTo: props.assignedTo });
     lastResults = data;
 
-    const { runMutation } = useMutation(["X"]);
+    const { runMutation } = useMutation("X");
     renders++;
 
     if (!hasRun.current && props.run) {
@@ -72,10 +73,10 @@ test("force update from client mutation subscription -- string", async () => {
   await pause();
 
   expect(lastResults).toEqual({ a: 1 });
-  
+
   rerender(<ComponentToUse run={true} />);
   await pause();
-  
+
   expect(lastResults).toEqual({ a: 99 });
 });
 
@@ -84,10 +85,10 @@ test("force update from client mutation subscription -- regex", async () => {
 
   const ComponentToUse = props => {
     const hasRun = useRef(false);
-    const { data } = useQuery([LOAD_TASKS, { assignedTo: props.assignedTo }]);
+    const { data } = useQuery(LOAD_TASKS, { assignedTo: props.assignedTo });
     lastResults = data;
 
-    const { runMutation } = useMutation(["X"]);
+    const { runMutation } = useMutation("X");
     renders++;
 
     if (!hasRun.current && props.run) {
@@ -116,9 +117,9 @@ test("force update from client mutation subscription -- regex", async () => {
   await pause();
 
   expect(lastResults).toEqual({ a: 1 });
-  
+
   rerender(<ComponentToUse run={true} />);
   await pause();
-  
+
   expect(lastResults).toEqual({ a: 99 });
 });

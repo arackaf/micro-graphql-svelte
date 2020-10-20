@@ -15,18 +15,19 @@ beforeEach(() => {
   renders = 0;
 });
 
-test("Cache object behaves correctly", async () => {
+test("Initial results sync available if possible", async () => {
   const ComponentToUse = props => {
     const loadTasks = useQuery(LOAD_TASKS, { a: 12 });
     return null;
   };
 
+  const ComponentToUseNext = props => {
+    const loadTasks = useQuery(LOAD_TASKS, { a: 12 });
+    expect(loadTasks.data).not.toBeNull();
+    return null;
+  };
+
   client1.nextResult = { data: {} };
   let { rerender } = render(<ComponentToUse />);
-
-  expect(typeof client1.getCache(LOAD_TASKS)).toBe("object");
-  expect(typeof client1.getCache(LOAD_USERS)).toBe("undefined");
-
-  expect(typeof client1.getCache(LOAD_TASKS).get(client1.getGraphqlQuery({ query: LOAD_TASKS, variables: { a: 12 } }))).toBe("object");
-  expect(client1.getCache(LOAD_TASKS).keys.length).toBe(1);
+  let { rerender_next } = render(<ComponentToUseNext />);
 });
