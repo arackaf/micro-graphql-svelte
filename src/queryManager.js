@@ -16,8 +16,7 @@ export default class QueryManager {
   };
   currentState = { ...QueryManager.initialState };
 
-  constructor({ client, setState, cache }, packet) {
-    const [query, variables, options] = deConstructQueryPacket(packet);
+  constructor({ query, client, setState, cache }, options) {
     this.client = client;
     this.setState = setState;
     this.cache = cache || client.getCache(query) || client.newCacheForQuery(query);
