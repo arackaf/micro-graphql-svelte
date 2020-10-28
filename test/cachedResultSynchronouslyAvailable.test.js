@@ -25,7 +25,6 @@ test("Initial results synchronously available if available", async () => {
   expect(client1.queriesRun).toBe(1);
 
   const { queryState: store2, sync: sync2 } = query(LOAD_TASKS);
-
   sync2({ a: 12 });
 
   expect(get(store2).data).toEqual({ x: 1 });
