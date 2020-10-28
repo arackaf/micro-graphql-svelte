@@ -3,7 +3,7 @@ import { writable, readable, derived } from "svelte/store";
 import { defaultClientManager } from "./client";
 import QueryManager from "./queryManager";
 
-export function loadQuery(query, options = {}) {
+export default function query(query, options = {}) {
   const queryStore = writable(QueryManager.initialState, () => () => {
     queryManager.dispose();
   });
