@@ -35,10 +35,9 @@ export default class MutationManager {
     Object.assign(this.currentState, newState);
     this.setState(this.currentState);
   };
-  constructor({ client, setState }, packet) {
+  constructor({ client }, packet) {
     const [mutation] = deConstructMutationPacket(packet);
     this.client = client;
-    this.setState = setState;
     this.mutation = mutation;
   }
 }

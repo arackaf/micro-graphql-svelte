@@ -2,7 +2,6 @@ import { setDefaultClient, query } from "../src/index";
 import ClientMock from "./clientMock";
 import { pause } from "./testUtil";
 
-
 const LOAD_TASKS = "A";
 const LOAD_USERS = "B";
 const UPDATE_USER = "M";

@@ -3,6 +3,7 @@ import { get } from "svelte/store";
 import { setDefaultClient, query, Cache } from "../src/index";
 import ClientMock from "./clientMock";
 import { dataPacket, deferred, pause, resolveDeferred } from "./testUtil";
+
 let client1;
 let client2;
 const basicQuery = "A";

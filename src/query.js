@@ -16,4 +16,3 @@ export default function query(query, options = {}) {
     sync: (variables, { active } = {}) => queryManager.load([query, variables])
   };
 }
-
