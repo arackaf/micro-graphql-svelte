@@ -3,11 +3,9 @@ import { writable, readable, derived } from "svelte/store";
 import { defaultClientManager } from "./client";
 import MutationManager from "./mutationManager";
 
-export default function mutation(packet) {
-  let [mutation, options = {}] = packet;
-
+export default function mutation(mutation, options = {}) {
   const client = options.client || defaultClientManager.getDefaultClient();
-  const mutationManager = new MutationManager({ client }, packet);
+  const mutationManager = new MutationManager({ client }, mutation);
 
   const mutationStore = writable(mutationManager.currentState, () => () => {
     mutationManager.setState = () => {};
