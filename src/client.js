@@ -78,6 +78,12 @@ export default class Client {
       let mutationKeysLookup = new Set(mutationKeys);
       [...this.mutationListeners].forEach(({ subscription, options: { currentResults, isActive, ...rest } }) => {
         subscription.forEach(singleSubscription => {
+          if (typeof isActive === "function") {
+            if (!isActive()) {
+              return;
+            }
+          }
+          
           if (typeof singleSubscription.when === "string") {
             if (mutationKeysLookup.has(singleSubscription.when)) {
               singleSubscription.run({ currentResults: currentResults(), refreshActiveQueries, ...rest }, resp, variables);
