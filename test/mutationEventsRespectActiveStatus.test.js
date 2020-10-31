@@ -27,6 +27,7 @@ generateTests(
 
 function generateTests(getClient, queryProps = () => ({}), mutationProps = () => ({})) {
   test("Mutation listener updates cache X", async () => {
+    const client = getClient();
     const { queryState, sync } = query("A", {
       onMutation: {
         when: "updateBook",
@@ -36,12 +37,13 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
             CachedBook && Object.assign(CachedBook, Book);
           });
         }
-      }
+      },
+      ...queryProps()
     });
     const { mutationState } = mutation("someMutation{}", mutationProps());
     sub = queryState.subscribe(() => {});
 
-    client1.nextResult = {
+    client.nextResult = {
       data: {
         Books: [
           { id: 1, title: "Book 1", author: "Adam" },
@@ -51,18 +53,18 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
     };
     await sync({ query: "a" }, { active: true });
 
-    client1.nextResult = { data: { Books: [{ id: 1, title: "Book 1", author: "Adam" }] } };
+    client.nextResult = { data: { Books: [{ id: 1, title: "Book 1", author: "Adam" }] } };
 
     await sync({ query: "b" }, { active: false });
 
-    client1.nextMutationResult = { updateBook: { Book: { id: 2, author: "Eve" } } };
+    client.nextMutationResult = { updateBook: { Book: { id: 2, author: "Eve" } } };
     await get(mutationState).runMutation();
 
-    expect(client1.queriesRun).toBe(1); //nothing loaded
+    expect(client.queriesRun).toBe(1); //nothing loaded
 
     await sync({ query: "a" }, { active: false });
 
-    expect(client1.queriesRun).toBe(1); //nothing's changed
+    expect(client.queriesRun).toBe(1); //nothing's changed
     expect(get(queryState).data).toEqual({
       //nothing's changed
       Books: [
@@ -73,6 +75,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
   });
 
   test("Mutation listener updates cache with mutation args - string", async () => {
+    const client = getClient();
     const { queryState, sync } = query("A", {
       onMutation: {
         when: "deleteBook",
@@ -82,7 +85,8 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
             refresh();
           });
         }
-      }
+      },
+      ...queryProps()
     });
     const { mutationState } = mutation("someMutation{}", mutationProps());
     sub = queryState.subscribe(() => {});
@@ -91,29 +95,30 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
       { id: 1, title: "Book 1", author: "Adam" },
       { id: 2, title: "Book 2", author: "Eve" }
     ];
-    client1.nextResult = {
+    client.nextResult = {
       data: {
         Books: initialBooks
       }
     };
     await sync({ query: "a" }, { active: true });
 
-    client1.nextResult = { data: { Books: [{ id: 1, title: "Book 1", author: "Adam" }] } };
+    client.nextResult = { data: { Books: [{ id: 1, title: "Book 1", author: "Adam" }] } };
     await sync({ query: "b" }, { active: false });
 
-    client1.nextMutationResult = { deleteBook: { success: true } };
+    client.nextMutationResult = { deleteBook: { success: true } };
     await get(mutationState).runMutation({ id: 1 });
 
-    expect(client1.queriesRun).toBe(1); //nothing changed
+    expect(client.queriesRun).toBe(1); //nothing changed
     expect(get(queryState).data).toEqual({ Books: initialBooks }); //loads updated data
 
     await sync({ query: "a" }, { active: false });
 
-    expect(client1.queriesRun).toBe(1); //nothing changed
+    expect(client.queriesRun).toBe(1); //nothing changed
     expect(get(queryState).data).toEqual({ Books: initialBooks }); //loads updated data
   });
 
   test("Mutation listener updates cache with mutation args - regex", async () => {
+    const client = getClient();
     const { queryState, sync } = query("A", {
       onMutation: {
         when: /deleteBook/,
@@ -123,7 +128,8 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
             refresh();
           });
         }
-      }
+      },
+      ...queryProps()
     });
     const { mutationState } = mutation("someMutation{}", mutationProps());
     sub = queryState.subscribe(() => {});
@@ -132,29 +138,30 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
       { id: 1, title: "Book 1", author: "Adam" },
       { id: 2, title: "Book 2", author: "Eve" }
     ];
-    client1.nextResult = {
+    client.nextResult = {
       data: {
         Books: initialBooks
       }
     };
     await sync({ query: "a" }, { active: true });
 
-    client1.nextResult = { data: { Books: [{ id: 1, title: "Book 1", author: "Adam" }] } };
+    client.nextResult = { data: { Books: [{ id: 1, title: "Book 1", author: "Adam" }] } };
     await sync({ query: "b" }, { active: false });
 
-    client1.nextMutationResult = { deleteBook: { success: true } };
+    client.nextMutationResult = { deleteBook: { success: true } };
     await get(mutationState).runMutation({ id: 1 });
 
-    expect(client1.queriesRun).toBe(1); // no change
+    expect(client.queriesRun).toBe(1); // no change
     expect(get(queryState).data).toEqual({ Books: initialBooks }); //no change
 
     await sync({ query: "a" }, { active: false });
 
-    expect(client1.queriesRun).toBe(1); // no change
+    expect(client.queriesRun).toBe(1); // no change
     expect(get(queryState).data).toEqual({ Books: initialBooks }); //no change
   });
 
   test("Mutation listener updates cache then refreshes from cache", async () => {
+    const client = getClient();
     const { queryState, sync } = query("A", {
       onMutation: {
         when: "updateBook",
@@ -174,7 +181,8 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
             refresh();
           });
         }
-      }
+      },
+      ...queryProps()
     });
     const { mutationState } = mutation("someMutation{}", mutationProps());
     sub = queryState.subscribe(() => {});
@@ -183,22 +191,23 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
       { id: 1, title: "Book 1", author: "Adam" },
       { id: 2, title: "Book 2", author: "__WRONG__Eve" }
     ];
-    client1.nextResult = {
+    client.nextResult = {
       data: {
         Books: initialBooks
       }
     };
     await sync({ query: "a" }, { active: false });
 
-    client1.nextMutationResult = { updateBook: { Book: { id: 2, author: "Eve" } } };
+    client.nextMutationResult = { updateBook: { Book: { id: 2, author: "Eve" } } };
     await get(mutationState).runMutation();
     await pause();
 
-    expect(client1.queriesRun).toBe(0); //never run
+    expect(client.queriesRun).toBe(0); //never run
     expect(get(queryState).data).toEqual(null); //refreshed with updated data
   });
 
   test("Mutation listener updates cache then refreshes from cache 2", async () => {
+    const client = getClient();
     const { queryState, sync } = query("A", {
       onMutation: {
         when: "updateBook",
@@ -218,7 +227,8 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
             refresh();
           });
         }
-      }
+      },
+      ...queryProps()
     });
     const { mutationState } = mutation("someMutation{}", mutationProps());
     sub = queryState.subscribe(() => {});
@@ -227,7 +237,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
       { id: 1, title: "Book 1", author: "Adam" },
       { id: 2, title: "Book 2", author: "__WRONG__Eve" }
     ];
-    client1.nextResult = {
+    client.nextResult = {
       data: {
         Books: initialBooks
       }
@@ -236,14 +246,15 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
 
     await sync({ query: "a" }, { active: false });
 
-    client1.nextMutationResult = { updateBook: { Book: { id: 2, author: "Eve" } } };
+    client.nextMutationResult = { updateBook: { Book: { id: 2, author: "Eve" } } };
     await get(mutationState).runMutation();
 
-    expect(client1.queriesRun).toBe(1); //run once
+    expect(client.queriesRun).toBe(1); //run once
     expect(get(queryState).data).toEqual({ Books: initialBooks }); //refreshed with updated data
   });
 
   test("Mutation listener - soft reset - props right, cache cleared", async () => {
+    const client = getClient();
     let componentsCache = null;
     const { queryState, sync } = query("A", {
       onMutation: {
@@ -254,7 +265,8 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
           CachedBook && Object.assign(CachedBook, Book);
           softReset(currentResults);
         }
-      }
+      },
+      ...queryProps()
     });
     const { mutationState } = mutation("someMutation{}", mutationProps());
     sub = queryState.subscribe(() => {});
@@ -263,14 +275,14 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
       { id: 1, title: "Book 1", author: "Adam" },
       { id: 2, title: "Book 2", author: "__WRONG__Eve" }
     ];
-    client1.nextResult = {
+    client.nextResult = {
       data: {
         Books: initialBooks
       }
     };
     await sync({ query: "a" }, { active: false });
 
-    client1.nextMutationResult = { updateBook: { Book: { id: 2, author: "Eve" } } };
+    client.nextMutationResult = { updateBook: { Book: { id: 2, author: "Eve" } } };
     await get(mutationState).runMutation();
 
     expect(componentsCache).toBe(null); //no change
@@ -278,6 +290,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
   });
 
   test("Mutation listener - soft reset - props right, cache cleared 2", async () => {
+    const client1 = getClient();
     let componentsCache = null;
     const { queryState, sync } = query("A", {
       onMutation: {
@@ -288,7 +301,8 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
           CachedBook && Object.assign(CachedBook, Book);
           softReset(currentResults);
         }
-      }
+      },
+      ...queryProps()
     });
     const { mutationState } = mutation("someMutation{}", mutationProps());
     sub = queryState.subscribe(() => {});
@@ -314,6 +328,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
   });
 
   test("Mutation listener - hard reset - props right, cache cleared, client qeried", async () => {
+    const client = getClient();
     let componentsCache = null;
     const { queryState, sync } = query("A", {
       onMutation: {
@@ -322,7 +337,8 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
           componentsCache = cache;
           hardReset();
         }
-      }
+      },
+      ...queryProps()
     });
     const { mutationState } = mutation("someMutation{}", mutationProps());
     sub = queryState.subscribe(() => {});
@@ -331,7 +347,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
       { id: 1, title: "Book 1", author: "Adam" },
       { id: 2, title: "Book 2", author: "__WRONG__Eve" }
     ];
-    client1.nextResult = {
+    client.nextResult = {
       data: {
         Books: initialBooks
       }
@@ -339,8 +355,8 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
 
     await sync({ query: "a" }, { active: false });
 
-    expect(client1.queriesRun).toBe(0); //nothing
-    client1.nextResult = {
+    expect(client.queriesRun).toBe(0); //nothing
+    client.nextResult = {
       data: {
         Books: [
           { id: 1, title: "Book 1", author: "Adam" },
@@ -348,15 +364,16 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
         ]
       }
     };
-    client1.nextMutationResult = { updateBook: { Book: { id: 2, author: "Eve" } } };
+    client.nextMutationResult = { updateBook: { Book: { id: 2, author: "Eve" } } };
     await get(mutationState).runMutation();
 
     expect(componentsCache).toBe(null); //just the initial entry
     expect(get(queryState).data).toEqual(null); //nothing there
-    expect(client1.queriesRun).toBe(0); //no run from the hard reset
+    expect(client.queriesRun).toBe(0); //no run from the hard reset
   });
 
   test("Mutation listener - hard reset - props right, cache cleared, client qeried 2", async () => {
+    const client = getClient();
     let componentsCache = null;
     const { queryState, sync } = query("A", {
       onMutation: {
@@ -365,7 +382,8 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
           componentsCache = cache;
           hardReset();
         }
-      }
+      },
+      ...queryProps()
     });
     const { mutationState } = mutation("someMutation{}", mutationProps());
     sub = queryState.subscribe(() => {});
@@ -374,7 +392,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
       { id: 1, title: "Book 1", author: "Adam" },
       { id: 2, title: "Book 2", author: "__WRONG__Eve" }
     ];
-    client1.nextResult = {
+    client.nextResult = {
       data: {
         Books: initialBooks
       }
@@ -384,8 +402,8 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
 
     await sync({ query: "a" }, { active: false });
 
-    expect(client1.queriesRun).toBe(1); //just the one
-    client1.nextResult = {
+    expect(client.queriesRun).toBe(1); //just the one
+    client.nextResult = {
       data: {
         Books: [
           { id: 1, title: "Book 1", author: "Adam" },
@@ -393,13 +411,13 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
         ]
       }
     };
-    client1.nextMutationResult = { updateBook: { Book: { id: 2, author: "Eve" } } };
+    client.nextMutationResult = { updateBook: { Book: { id: 2, author: "Eve" } } };
     await get(mutationState).runMutation();
 
     expect(componentsCache).toBe(null); //just the initial entry
     expect(get(queryState).data).toEqual({
       Books: initialBooks
     }); //updated data is not there
-    expect(client1.queriesRun).toBe(1); //no run from the hard reset
+    expect(client.queriesRun).toBe(1); //no run from the hard reset
   });
 }
