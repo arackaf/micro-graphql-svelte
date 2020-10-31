@@ -13,6 +13,6 @@ export default function query(query, options = {}) {
 
   return {
     queryState: derived(queryStore, $state => $state),
-    sync: (variables, { active } = {}) => queryManager.load([query, variables])
+    sync: (variables, options) => queryManager.load([query, variables], options)
   };
 }

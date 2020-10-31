@@ -7,6 +7,7 @@ const deConstructQueryPacket = packet => {
 };
 
 export default class QueryManager {
+  active = true;
   mutationSubscription = null;
   static initialState = {
     loading: false,
@@ -37,6 +38,7 @@ export default class QueryManager {
     this.currentState.clearCache = () => this.cache.clearCache();
     this.currentState.clearCacheAndReload = this.clearCacheAndReload;
   }
+  isActive = () => this.active;
   updateState = newState => {
     Object.assign(this.currentState, newState);
     this.setState(Object.assign({}, this.currentState));
@@ -59,7 +61,14 @@ export default class QueryManager {
   reload = () => {
     this.execute();
   };
-  load(packet, force) {
+  load(packet, { force, active } = {}) {
+    if (typeof active !== "undefined") {
+      this.active = active;
+    }
+    if (!this.isActive()) {
+      return;
+    }
+
     if (packet) {
       const [query, variables] = deConstructQueryPacket(packet);
       let graphqlQuery = this.client.getGraphqlQuery({ query, variables });
@@ -74,10 +83,14 @@ export default class QueryManager {
     this.cache.getFromCache(
       graphqlQuery,
       promise => {
-        Promise.resolve(promise).then(() => {
-          //cache should now be updated, unless it was cleared. Either way, re-run this method
-          this.load();
-        });
+        Promise.resolve(promise)
+          .then(() => {
+            //cache should now be updated, unless it was cleared. Either way, re-run this method
+            this.load();
+          })
+          .catch(err => {
+            this.load();
+          });
       },
       cachedEntry => {
         this.updateState({ data: cachedEntry.data, error: cachedEntry.error || null, loading: false, loaded: true, currentQuery: graphqlQuery });
