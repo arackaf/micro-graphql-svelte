@@ -30,6 +30,24 @@ generateTests(
 );
 
 function generateTests(getClient, queryProps = () => ({}), mutationProps = () => ({})) {
+  test("client.forceUpdate works", async () => {
+    const client = getClient();
+    const { sync, queryState } = query(LOAD_TASKS, { ...queryProps() });
+    sub = queryState.subscribe(x => {});
+
+    client.nextResult = { data: { x: 1 } };
+    await sync({ assignedTo: 1 });
+
+    expect(get(queryState).data).toEqual({ x: 1 });
+
+    client.nextResult = { data: { x: 2 } };
+    const cache = client.getCache(LOAD_TASKS);
+    cache.clearCache();
+    await client.forceUpdate(LOAD_TASKS);
+
+    expect(get(queryState).data).toEqual({ x: 2 });
+  });
+
   test("force update from client mutation subscription -- string", async () => {
     var lastResults = null;
     const client = getClient();
@@ -55,54 +73,38 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
 
     await sync({ assignedTo: null });
     expect(get(queryState).data).toEqual({ a: 1 });
-    
+
     await get(mutationState).runMutation();
     expect(get(queryState).data).toEqual({ a: 99 });
   });
 
-  /*
   test("force update from client mutation subscription -- regex", async () => {
+    const client = getClient();
     var lastResults = null;
-  
-    const ComponentToUse = props => {
-      const hasRun = useRef(false);
-      const { data } = useQuery(LOAD_TASKS, { assignedTo: props.assignedTo });
-      lastResults = data;
-  
-      const { runMutation } = useMutation("X");
-      renders++;
-  
-      if (!hasRun.current && props.run) {
-        hasRun.current = true;
-        runMutation({});
-      }
-  
-      return null;
-    };
-    client1.subscribeMutation({
+    const { sync, queryState } = query(LOAD_TASKS, { ...queryProps() });
+    sub = queryState.subscribe(x => {});
+
+    const { mutationState } = mutation("X", mutationProps());
+
+    client.subscribeMutation({
       when: /a/,
       run: ({ refreshActiveQueries }) => {
-        let cache = client1.getCache(LOAD_TASKS);
-  
+        let cache = client.getCache(LOAD_TASKS);
+
         [...cache._cache.keys()].forEach(k => {
           cache._cache.set(k, { data: { a: 99 } });
         });
-  
+
         refreshActiveQueries(LOAD_TASKS);
       }
     });
-    client1.nextMutationResult = { a: 2 };
-    client1.nextResult = { data: { a: 1 } };
-  
-    let { rerender } = render(<ComponentToUse />);
-    await pause();
-  
-    expect(lastResults).toEqual({ a: 1 });
-  
-    rerender(<ComponentToUse run={true} />);
-    await pause();
-  
-    expect(lastResults).toEqual({ a: 99 });
+    client.nextMutationResult = { a: 2 };
+    client.nextResult = { data: { a: 1 } };
+
+    await sync({ assignedTo: 1 });
+    expect(get(queryState).data).toEqual({ a: 1 });
+
+    await get(mutationState).runMutation();
+    expect(get(queryState).data).toEqual({ a: 99 });
   });
-  */
 }
