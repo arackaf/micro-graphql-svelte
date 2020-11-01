@@ -2,8 +2,8 @@
   import { query } from "../../src/index";
 
   let runCount = 0;
-  
-  let { sync } = query("A", {
+
+  let { sync, queryState } = query("A", {
     onMutation: {
       when: "updateBook",
       run: () => {
@@ -15,4 +15,9 @@
     }
   });
   sync({ a: 1 });
+
 </script>
+
+<div>
+  {$queryState}
+</div>

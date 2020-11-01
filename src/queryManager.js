@@ -135,6 +135,6 @@ export default class QueryManager {
   }
   dispose() {
     this.mutationSubscription && this.mutationSubscription();
-    this.unregisterQuery();
+    this.unregisterQuery && this.unregisterQuery();
   }
 }
