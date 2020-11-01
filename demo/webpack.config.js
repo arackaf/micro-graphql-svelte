@@ -1,40 +1,93 @@
-var UglifyJsPlugin = require("uglifyjs-webpack-plugin");
-
 var path = require("path");
-var webpack = require("webpack");
-var isProduction = process.env.NODE_ENV === "production" || process.argv.some(arg => arg.indexOf("webpack-dev-server") >= 0);
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+
+const isProd = process.env.NODE_ENV == "production";
 
 module.exports = {
   entry: {
     demo: "./demo/index.js"
   },
   output: {
-    filename: "[name]-bundle.js",
+    filename: "[name]-[contenthash]-bundle.js",
     path: path.resolve(__dirname, "dist"),
-    publicPath: "react-redux/dist/"
+    publicPath: "/dist/"
   },
+  mode: isProd ? "production" : "development",
   resolve: {
-    extensions: [".js"],
-    modules: [path.resolve("./"), path.resolve("./node_modules")]
+    extensions: [".mjs", ".js", ".ts", ".tsx", ".svelte"],
+    alias: {
+      svelte: path.resolve("node_modules", "svelte")
+    },
+    modules: [path.resolve("./"), path.resolve("./node_modules")],
+    mainFields: ["svelte", "browser", "module", "main"]
   },
   module: {
-    loaders: [
+    rules: [
       {
-        test: /\.js$/,
+        test: /\.(html|svelte)$/,
+        exclude: /node_modules/,
+        use: [
+          {
+            loader: "babel-loader",
+            query: {
+              presets: ["@babel/preset-typescript"],
+              plugins: [
+                "@babel/plugin-proposal-class-properties",
+                "@babel/plugin-proposal-optional-chaining",
+                "@babel/plugin-proposal-nullish-coalescing-operator"
+              ]
+            }
+          },
+          {
+            loader: "svelte-loader",
+            options: {
+              emitCss: true
+            }
+          }
+        ]
+      },
+      {
+        test: /\.(t|j)sx?$/,
         exclude: /node_modules/,
         loader: "babel-loader",
         query: {
-          presets: ["react"],
-          plugins: ["transform-decorators-legacy", "transform-class-properties", "transform-object-rest-spread"]
+          presets: ["@babel/preset-typescript"],
+          plugins: [
+            "@babel/plugin-proposal-class-properties",
+            "@babel/plugin-proposal-optional-chaining",
+            "@babel/plugin-proposal-nullish-coalescing-operator"
+          ]
         }
+      },
+      {
+        test: /\.s?css$/,
+        oneOf: [
+          {
+            test: /\.module\.s?css$/,
+            use: [
+              MiniCssExtractPlugin.loader,
+              { loader: "css-loader", options: { modules: true } },
+              "sass-loader"
+            ]
+          },
+          {
+            use: [MiniCssExtractPlugin.loader, "css-loader", "sass-loader"]
+          }
+        ]
+      },
+      {
+        test: /\.(png|jpg|gif|svg|eot|woff|woff2|ttf)$/,
+        use: [
+          {
+            loader: "file-loader"
+          }
+        ]
       }
     ]
   },
   plugins: [
-    isProduction ? new UglifyJsPlugin({ uglifyOptions: { ie8: false, ecma: 8 } }) : null,
-    new webpack.DefinePlugin({
-      "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV || "development")
-    }),
-    isProduction ? new webpack.optimize.ModuleConcatenationPlugin() : null
-  ].filter(p => p)
+    new HtmlWebpackPlugin({ template: "demo/index.htm" }),
+    new MiniCssExtractPlugin({ filename: "[name]-[contenthash].css" })
+  ]
 };
