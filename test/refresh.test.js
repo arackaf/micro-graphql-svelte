@@ -22,15 +22,16 @@ afterEach(() => {
   sub = null;
 });
 
-generateTests(() => client1);
+generateTests("client 1", () => client1);
 generateTests(
+  "client 2",
   () => client2,
   () => ({ client: client2 }),
   () => ({ client: client2 })
 );
 
-function generateTests(getClient, queryProps = () => ({}), mutationProps = () => ({})) {
-  test("client.forceUpdate works", async () => {
+function generateTests(name, getClient, queryProps = () => ({}), mutationProps = () => ({})) {
+  test("client.forceUpdate works - " + name, async () => {
     const client = getClient();
     const { sync, queryState } = query(LOAD_TASKS, { ...queryProps() });
     sub = queryState.subscribe(x => {});
@@ -48,7 +49,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
     expect(get(queryState).data).toEqual({ x: 2 });
   });
 
-  test("force update from client mutation subscription -- string", async () => {
+  test("force update from client mutation subscription -- string - " + name, async () => {
     var lastResults = null;
     const client = getClient();
     const { queryState, sync } = query(LOAD_TASKS, { ...queryProps() });
@@ -78,7 +79,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
     expect(get(queryState).data).toEqual({ a: 99 });
   });
 
-  test("force update from client mutation subscription -- regex", async () => {
+  test("force update from client mutation subscription -- regex - " + name, async () => {
     const client = getClient();
     var lastResults = null;
     const { sync, queryState } = query(LOAD_TASKS, { ...queryProps() });

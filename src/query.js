@@ -4,12 +4,16 @@ import { defaultClientManager } from "./client";
 import QueryManager from "./queryManager";
 
 export default function query(query, options = {}) {
-  const queryStore = writable(QueryManager.initialState, () => () => {
-    queryManager.dispose();
+  let queryManager;
+  const queryStore = writable(QueryManager.initialState, () => {
+    queryManager.activate();
+    return () => {
+      queryManager.dispose();
+    };
   });
 
   const client = options.client || defaultClientManager.getDefaultClient();
-  const queryManager = new QueryManager({ query, client, cache: options.cache, setState: queryStore.set }, options);
+  queryManager = new QueryManager({ query, client, cache: options.cache, setState: queryStore.set }, options);
 
   return {
     queryState: derived(queryStore, $state => $state),

@@ -18,22 +18,16 @@ export default class QueryManager {
   currentState = { ...QueryManager.initialState };
 
   constructor({ query, client, setState, cache }, options) {
+    this.query = query;
     this.client = client;
     this.setState = setState;
+    this.options = options;
     this.cache = cache || client.getCache(query) || client.newCacheForQuery(query);
-    this.unregisterQuery = this.client.registerQuery(query, this.refresh);
+
     if (typeof options.onMutation === "object") {
       if (!Array.isArray(options.onMutation)) {
         options.onMutation = [options.onMutation];
       }
-      this.mutationSubscription = this.client.subscribeMutation(options.onMutation, {
-        cache: this.cache,
-        softReset: this.softReset,
-        hardReset: this.hardReset,
-        refresh: this.refresh,
-        currentResults: () => this.currentState.data,
-        isActive: this.isActive
-      });
     }
     this.currentState.reload = this.reload;
     this.currentState.clearCache = () => this.cache.clearCache();
@@ -126,6 +120,19 @@ export default class QueryManager {
         this.updateState({ loaded: true, loading: false, data: null, error: err, currentQuery: cacheKey });
       });
   };
+  activate() {
+    if (typeof this.options.onMutation === "object") {
+      this.mutationSubscription = this.client.subscribeMutation(this.options.onMutation, {
+        cache: this.cache,
+        softReset: this.softReset,
+        hardReset: this.hardReset,
+        refresh: this.refresh,
+        currentResults: () => this.currentState.data,
+        isActive: this.isActive
+      });
+    }
+    this.unregisterQuery = this.client.registerQuery(this.query, this.refresh);
+  }
   dispose() {
     this.mutationSubscription && this.mutationSubscription();
     this.unregisterQuery();
