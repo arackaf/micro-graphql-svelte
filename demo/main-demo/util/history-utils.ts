@@ -5,7 +5,7 @@ export const history = createHistory();
 
 export function getCurrentUrlState() {
   let location = history.location;
-  let parsed = queryString.parse(location.search);
+  let parsed = queryString.parse(location.search) as any;
 
   if ("userId" in parsed && !parsed.userId) {
     parsed.userId = "-1"; //make it truthy so we know it's there

@@ -402,8 +402,8 @@ label {
 
 .wait-for-loading > i {
   position: fixed;
-  top: 40%;
-  left: 50%;
+  top: 30%;
+  left: calc(50% - 80px);
   opacity: 0.2;
   z-index: 5000;
 }

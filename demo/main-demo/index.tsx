@@ -2,7 +2,7 @@ import React, { Suspense, useState, useEffect, useRef } from "react";
 const { unstable_useTransition: useTransition } = React as any;
 import "../static/fontawesome/css/font-awesome-booklist-build.css";
 
-import { useSuspenseQuery, getDefaultClient } from "../../src/index";
+import { getDefaultClient } from "../../src/index";
 import { BOOKS_QUERY, ALL_SUBJECTS_QUERY } from "../savedQueries";
 import { TableHeader, DisplayBooks } from "./data-display";
 import SearchHeader, { SearchHeaderDisabled } from "./SearchHeader";
@@ -12,7 +12,7 @@ import BookEditModal from "./BookEditModal";
 import queryString from "query-string";
 import { getSearchState, history } from "./util/history-utils";
 
-import Loading from "./ui/Loading";
+import Loading from "./ui/Loading.svelte";
 
 const SuspenseDemo = props => {
   const [startTransition, isPending] = useTransition({ timeoutMs: 9000 });
