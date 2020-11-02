@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect, useRef } from "react";
-import FlowItems from "./layout/FlowItems";
+import FlowItems from "./layout/FlowItems.svelte";
 import { getSearchState, setSearchValues, history } from "./util/history-utils";
 import Modal from "./ui/Modal";
 import { RemovableLabelDisplay } from "./ui/LabelDisplay";

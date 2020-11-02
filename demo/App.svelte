@@ -4,6 +4,4 @@
   import DemoRoot from "./main-demo/DemoRoot";
 </script>
 
-<h1>
-  <DemoRoot />
-</h1>
+<DemoRoot />
