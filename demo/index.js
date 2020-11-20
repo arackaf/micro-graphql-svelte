@@ -1,7 +1,6 @@
 import App from "./App";
 
 import { Client, setDefaultClient } from "../src/index";
-import "./site-styles.scss";
 
 const client = new Client({
   endpoint: "https://mylibrary.io/graphql-public",

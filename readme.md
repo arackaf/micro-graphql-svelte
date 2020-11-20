@@ -1,24 +1,16 @@
-[![npm version](https://img.shields.io/npm/v/micro-graphql-react.svg?style=flat)](https://www.npmjs.com/package/micro-graphql-react) [![Build Status](https://travis-ci.com/arackaf/micro-graphql-react.svg?branch=master)](https://travis-ci.com/arackaf/micro-graphql-react) [![codecov](https://codecov.io/gh/arackaf/micro-graphql-react/branch/master/graph/badge.svg)](https://codecov.io/gh/arackaf/micro-graphql-react) [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
+[![npm version](https://img.shields.io/npm/v/micro-graphql-svelte.svg?style=flat)](https://www.npmjs.com/package/micro-graphql-svelte) 
 
-# micro-graphql-react
+# micro-graphql-svelte
 
----
-
-**NOTE** These docs are still a work in progress. I'm only putting them on Master because the old ones were terribly out-dated and inaccurate, given how much the project has changed since it was originally released.
-
-The current version is 0.4.0-betaXX, but the beta is only because of the React Suspense stuff which itself is still in beta. The non-Suspense code in the latest version should be considered stable and safe.
 
 ---
 
-A light (2.6K min+gzip) and simple solution for painlessly connecting your React components to a GraphQL endpoint.
+A light (2.6K min+gzip) and simple solution for painlessly connecting your Svelte components to a GraphQL endpoint.
 
-Like any other GraphQL React client, there are simple hooks which query, and mutate data from your GraphQL endpoint.  Where this project differs is how it approaches cache invalidation. Rather than adding metadata to queries and forming a normalized, automatically-managed cache, it instead provides simple, low-level building blocks to handle cache management yourself. The reason for this (ostensibly poor!) tradeoff is because of my experience with other GraphQL clients which attempted the normalized cache route. I consistently had difficulty getting the cache to behave exactly as I wanted, so decided to build a GraphQL client that gave me the low-level control I always wound up wanting. This project is the result.
+This project has a query and mutation function to produce a store with your query's data, or mutation info.  Where this project differs from most others is how it approaches cache invalidation. Rather than adding metadata to queries and forming a normalized, automatically-managed cache, it instead provides simple, low-level building blocks to handle cache management yourself. The reason for this (ostensibly poor!) tradeoff is because of my experience with other GraphQL clients which attempted the normalized cache route. I consistently had difficulty getting the cache to behave exactly as I wanted, so decided to build a GraphQL client that gave me the low-level control I always wound up wanting. This project is the result.
 
-Full docs are [here](https://arackaf.github.io/micro-graphql-react/)
+Full docs are [here](https://arackaf.github.io/micro-graphql-svelte/)
 
-A live Suspense-based demo of this library is [here](https://micro-graphql-react.herokuapp.com/demo)
-
-The slides for the GraphQL Texas talk I gave are [here](https://micro-graphql-react.herokuapp.com/slides?slide=0&slideElement=-1)
 
 The rest of this README describes in better detail the kind of cache management problems this project attempts to avoid.
 
@@ -66,7 +58,7 @@ which may or may not be what you want, but worse, if you browse to some other fi
 
 ---
 
-This library solves this problem by allowing you to easily declare that a given mutation should clear all cache entries for a given query, and reload them from the network (hard reset), or just update the on-screen results, but otherwise clear the cache for a given query (soft reset).  See the [docs](https://arackaf.github.io/micro-graphql-react/) for more info.
+This library solves this problem by allowing you to easily declare that a given mutation should clear all cache entries for a given query, and reload them from the network (hard reset), or just update the on-screen results, but otherwise clear the cache for a given query (soft reset).  See the [docs](https://arackaf.github.io/micro-graphql-svelte/) for more info.
 
 ### Properly processing empty result sets
 

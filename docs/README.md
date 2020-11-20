@@ -1,14 +1,14 @@
 ## Installation
 
 ```javascript
-npm i micro-graphql-react --save
+npm i micro-graphql-svelte --save
 ```
 
 **Note** - this project ships standard, modern JavaScript (ES6, object spread, etc) that works in all evergreen browsers. If you need to support ES5 environments like IE11, just add an alias pointing to the ES5 build in your webpack config like so
 
 ```javascript
 alias: {
-  "micro-graphql-react": "node_modules/micro-graphql-react/index-es5.js"
+  "micro-graphql-svelte": "node_modules/micro-graphql-svelte/index-es5.js"
 },
 ```
 
@@ -19,7 +19,7 @@ alias: {
 Before you do anything, you'll need to create a client.
 
 ```javascript
-import { Client, setDefaultClient } from "micro-graphql-react";
+import { Client, setDefaultClient } from "micro-graphql-svelte";
 
 const client = new Client({
   endpoint: "/graphql",
@@ -29,14 +29,14 @@ const client = new Client({
 setDefaultClient(client);
 ```
 
-Now that client will be used by default, everywhere, unless you manually pass in a different client to a hook's options, as discussed below.
+Now that client will be used by default, everywhere, unless you manually pass in a different client to a query's options, as discussed below.
 
 ### Accessing the client
 
 To access the default client anywhere in your codebase, you can use the `getDefaultClient` method.
 
 ```javascript
-import { getDefaultClient } from "micro-graphql-react";
+import { getDefaultClient } from "micro-graphql-svelte";
 
 const client = getDefaultClient();
 ```
@@ -66,18 +66,18 @@ const client = getDefaultClient();
 Regardless of whether you're using Suspense, it's a good idea to preload a query as soon as you know it'll be requested downstream by a (possibly lazy loaded) component. To preload a query, just call the `preload` method on the client, and pass a query, and any args you might have.
 
 ```javascript
-import { getDefaultClient } from "micro-graphql-react";
+import { getDefaultClient } from "micro-graphql-svelte";
 
 const client = getDefaultClient();
 client.preload(YourQuery, variables);
 ```
 
-### Hooks
+### Queries and Mutations
 
 This project exports a `useQuery`, `useSuspenseQuery`, and `useMutation` hook.
 
 ```javascript
-import { useQuery, useMutation } from "micro-graphql-react";
+import { useQuery, useMutation } from "micro-graphql-svelte";
 
 const ComponentWithQueryAndMutation = props => {
   let { loading, loaded, data, currentQuery } = useQuery(someQuery, { search: props.search }, options);
@@ -160,10 +160,6 @@ The options argument, if supplied, can contain this property
 | `finished`    | Mutation has finished executing|
 | `runMutation` | A function you can call when you want to run your mutation. Pass it with your variables |
 
-### React Suspense
-
-If you're using Suspense, just use the `useSuspenseQuery` hook. It has an identical api as `useQuery`, except it'll throw a promise whenever a data fetch is inflight, so your `useTransition()` calls and `Suspense` boundaries can respond accordingly.
-
 ## Caching
 
 The client object maintains a cache of each query it comes across when processing your components. The cache is LRU with a default size of 10 and, again, stored at the level of each specific query, not the GraphQL type. As your instances mount and unmount, and update, the cache will be checked for existing results to matching queries.
@@ -173,7 +169,7 @@ The client object maintains a cache of each query it comes across when processin
 You can import the `Cache` class like this
 
 ```javascript
-import { Cache } from "micro-graphql-react";
+import { Cache } from "micro-graphql-svelte";
 ```
 
 When instantiating a new cache object, you can optionally pass in a cache size.
@@ -372,7 +368,7 @@ Whenever a mutation comes back with `updateBook` or `updateBooks` results, we ma
 Obviously this is more boilerplate than we'd every want to write in practice, so let's tuck it behind a custom hook, like we did before.
 
 ```javascript
-import { useQuery } from "micro-graphql-react";
+import { useQuery } from "micro-graphql-svelte";
 
 export const useSoftResetQuery = (type, query, variables, options = {}) =>
   useQuery(query, variables, {
@@ -501,7 +497,7 @@ export default props => {
 It's a lot of code, but as always the idea is that you'd wrap it all into some re-usable helpers, like this
 
 ```javascript
-import { getDefaultClient } from "micro-graphql-react";
+import { getDefaultClient } from "micro-graphql-svelte";
 
 const graphQLClient = getDefaultClient();
 
@@ -578,7 +574,7 @@ By default this library ships modern, standard JavaScript, which should work in 
 ```javascript
   resolve: {
     alias: {
-      "micro-graphql-react": "node_modules/micro-graphql-react/index-es5.js"
+      "micro-graphql-svelte": "node_modules/micro-graphql-svelte/index-es5.js"
     },
     modules: [path.resolve("./"), path.resolve("./node_modules")]
   }
