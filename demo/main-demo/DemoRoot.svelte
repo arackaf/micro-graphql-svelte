@@ -1,21 +1,15 @@
 <script>
-  import { query, mutation } from "../../src/index";
   import { getSearchState, history, setSearchValues } from "./util/history-utils";
-  import { BOOKS_QUERY, ALL_SUBJECTS_QUERY } from "../savedQueries";
-  import { onDestroy } from "svelte";
+  import { onDestroy, setContext } from "svelte";
+
+  import HardReset from "./view-data/HardReset";
+  import { writable } from "svelte/store";
 
   let inputEl;
-  let { page, search } = getSearchState();
-  const historySub = history.listen(() => ({ page, search } = getSearchState()));
+  const searchStateStore = writable(getSearchState());
+  setContext("search_params", searchStateStore);
+  const historySub = history.listen(() => (searchStateStore.set(getSearchState())));
 
-  const { sync, queryState: booksQueryState } = query(BOOKS_QUERY);
-  $: {
-    sync({ page, search });
-    inputEl && (inputEl.value = search || "");
-  }
-
-
-  onDestroy(historySub);
 
   const searchTyped = evt => {
     if (evt.keyCode == 13) {
@@ -23,7 +17,10 @@
     }
   };
 
+  $: ({ search, page } = $searchStateStore);
+  $: inputEl && (inputEl.value = search);
 
+  onDestroy(historySub);
 </script>
 
 <div id="app" style="margin: 15px">
@@ -32,4 +29,9 @@
   <input bind:this={inputEl} on:keydown={searchTyped} />
 
   <div>{JSON.stringify({ page, search })}</div>
+  <div>{JSON.stringify($searchStateStore)}</div>
+
+  <hr />
+
+  <HardReset />
 </div>
