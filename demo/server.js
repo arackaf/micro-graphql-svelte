@@ -5,6 +5,7 @@ const app = express();
 
 
 //app.get("/", (req, response) => response.sendFile(path.join(__dirname, "../docs/index.html")));
+app.get("/", (req, response) => response.sendFile(path.join(__dirname, "./dist/index.html")));
 app.get("/demo", (req, response) => response.sendFile(path.join(__dirname, "./dist/index.html")));
 //app.get("/docs", (req, response) => response.sendFile(path.join(__dirname, "../docs/index.html")));
 //app.get("/slides", (req, response) => response.sendFile(path.join(__dirname, "../graphql-texas-slides/dist/index.html")));
