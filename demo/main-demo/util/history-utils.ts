@@ -21,7 +21,7 @@ export function getSearchState() {
   const { searchState } = getCurrentUrlState();
 
   return {
-    page: searchState.page || 1 as any,
+    page: +searchState.page || 1 as any,
     search: searchState.search || void 0
   };
 }

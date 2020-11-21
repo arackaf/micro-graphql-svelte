@@ -10,15 +10,14 @@
   setContext("search_params", searchStateStore);
   const historySub = history.listen(() => (searchStateStore.set(getSearchState())));
 
-
   const searchTyped = evt => {
     if (evt.keyCode == 13) {
-      setSearchValues({ search: evt.target.value });
+      setSearchValues({ search: evt.target.value || "", page: void 0 });
     }
   };
 
   $: ({ search, page } = $searchStateStore);
-  $: inputEl && (inputEl.value = search);
+  $: inputEl && (inputEl.value = search || "");
 
   onDestroy(historySub);
 </script>
