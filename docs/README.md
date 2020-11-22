@@ -33,7 +33,7 @@ Now that client will be used by default, everywhere, unless you manually pass in
 
 ### Accessing the client
 
-To access the default client anywhere in your codebase, you can use the `getDefaultClient` method.
+To access the default client anywhere in your codebase, use the `getDefaultClient` method.
 
 ```javascript
 import { getDefaultClient } from "micro-graphql-svelte";
@@ -52,19 +52,38 @@ const client = getDefaultClient();
 
 ### Client api
 
-<!-- prettier-ignore -->
-| Option  | Description |
-| -------| ----------- |
-| `runQuery(query: String, variables?: Object)` | Manually run this GraphQL query |
-| `runMutation(mutation: String, variables?: Object)`  | Manually run this GraphQL mutation|
-| `forceUpdate(query)`  | Manually update any components rendering that query. This is useful if you (dangerously) update a query's cache, as discussed in the caching section, below|
-| `subscribeMutation({ when, run })`  | Manually subscribe to a mutation, in order to manually update the cache. See below for more info|
+<table class="client-api">
+  <thead>
+    <tr>
+      <th>Option</ht>
+      <th>Description</ht>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>runQuery(query, variables)</code></td>
+      <td>Manually run this GraphQL query</td>
+    </tr>
+    <tr>
+      <td><code>runMutation(mutation, variables)</code></td>
+      <td>Manually run this GraphQL mutation</td>
+    </tr>
+    <tr>
+      <td><code>forceUpdate(query)</code></td>
+      <td>Manually update any components rendering that query. This is useful if you (dangerously) update a query's cache, as discussed in the caching section, below</td>
+    </tr>
+    <tr>
+      <td><code>subscribeMutation({ when, run })</code></td>
+      <td>Manually subscribe to a mutation, in order to manually update the cache. See below for more info</td>
+    </tr>
+  </tbody>
+</table>
 
 ## Running queries and mutations
 
 ### Preloading queries
 
-Regardless of whether you're using Suspense, it's a good idea to preload a query as soon as you know it'll be requested downstream by a (possibly lazy loaded) component. To preload a query, just call the `preload` method on the client, and pass a query, and any args you might have.
+It's always a good idea to preload a query as soon as you know it'll be requested downstream by a (possibly lazy loaded) component. To preload a query, call the `preload` method on the client, and pass a query, and any args you might have.
 
 ```javascript
 import { getDefaultClient } from "micro-graphql-svelte";
@@ -73,18 +92,16 @@ const client = getDefaultClient();
 client.preload(YourQuery, variables);
 ```
 
-### Queries and Mutations
-
-This project exports a `query`, and `mutation` function.
-
 ### Queries
 
 ```js
+import { query } from "micro-graphql-svelte";
+
 let { queryState, sync } = query(YOUR_QUERY);
 $: booksSync($searchState);
 ```
 
-query takes the following arguments
+`query` takes the following arguments
 
 <!-- prettier-ignore -->
 | Arg | Description | 
@@ -102,11 +119,11 @@ The options argument, if supplied, can contain these properties
 
 Be sure to use the `compress` tag to remove un-needed whitespace from your query text, since it will be sent via HTTP GET—for more information, see [here](./compress). An even better option would be to use my [persisted queries helper](https://github.com/arackaf/generic-persistgraphql). This not only removes the entire query text from your network requests altogether, but also from your bundled code.
 
-`query` returns an object with a `queryState` property, which will be a store with your query's current results, as well as a `sync` function, which you can call anytime to update the query's current variables. Your query will not actually run until you've called sync. If your query does not need any variables, then just call it immediately with an empty object.
+`query` returns an object with a `queryState` property, which will be a store with your query's current results, as well as a `sync` function, which you can call anytime to update the query's current variables. Your query will not actually run until you've called sync. If your query does not need any variables, just call it immediately with an empty object.
 
 ### Query results
 
-The `queryState` store returned from your `query()` call has the following properties.
+The `queryState` store has the following properties
 
 <!-- prettier-ignore -->
 | Props | Description |
@@ -124,10 +141,12 @@ The `queryState` store returned from your `query()` call has the following prope
 ### Mutations
 
 ```js
+import { mutation } from "micro-graphql-svelte";
+
 const { mutationState } = mutation(YOUR_MUTATION);
 ```
 
-The mutation function takes the following arguments. 
+The mutation function takes the following arguments.
 
 <!-- prettier-ignore -->
 | Arg         | Description  |
@@ -186,9 +205,9 @@ The cache object has the following properties and methods
 
 ### Cache invalidation
 
-The onMutation option that query options take is an object, or array of objects, of the form `{ when: string|regularExpression, run: function }`
+The onMutation option that query options take is an object, or array of objects of the form `{ when: string|regularExpression, run: function }`
 
-`when` is a string or regular expression that's tested against each result of any mutations that finish. If the mutation has any result set names that match, then `run` will be called with three arguments: an object with these properties, described below, `{ softReset, currentResults, hardReset, cache, refresh }`; the entire mutation result; and the mutation's `variables` object.
+`when` is a string or regular expression that's tested against each result of any mutations that finish. If the mutation has any result set names that match, `run` will be called with three arguments: an object with these properties, described below, `{ softReset, currentResults, hardReset, cache, refresh }`; the entire mutation result; and the mutation's `variables` object.
 
 <!-- prettier-ignore -->
 | Arg  | Description  |
@@ -196,8 +215,8 @@ The onMutation option that query options take is an object, or array of objects,
 | `softReset` | Clears the cache, but does **not** re-issue any queries. It can optionally take an argument of new, updated results, which will replace the current `data` props |
 | `currentResults` | The current results that are passed as your `data` prop |
 | `hardReset` | Clears the cache, and re-load the current query from the network|
-| `cache`  | The actual cache object. You can enumerate its entries, and update whatever you need.|
-| `refresh`   | Refreshes the current query, from cache if present. You'll likely want to call this after modifying the cache.  |
+| `cache`  | The actual cache object. You can enumerate its entries, and update whatever you need|
+| `refresh`   | Refreshes the current query, from cache if present. You'll likely want to call this after modifying the cache  |
 
 Many use cases follow. They're based on a hypothetical book tracking website.
 
@@ -205,7 +224,7 @@ The code below uses a publicly available GraphQL endpoint created by my [mongo-g
 
 #### Hard Reset: Reload the query after any relevant mutation
 
-Let's say that whenever a mutation happens, we want to immediately invalidate any related queries' caches, and reload the current data from the network. We understand this may cause a book that we just edited to immediately disappear from our current search results, since it no longer matches our search criteria.
+Let's say whenever a mutation happens, we want to immediately invalidate any related queries' caches, and reload the current data from the network. We understand this may cause a book we just edited to immediately disappear from our current search results, since it no longer matches our search criteria.
 
 The `hardReset` method that's passed makes this easy. Let's see how to use this in a (contrived) component that queries, and displays some books and subjects.
 
@@ -223,8 +242,8 @@ The `hardReset` method that's passed makes this easy. Let's see how to use this 
   });
   let { queryState: subjectsState, sync: subjectsSync } = query(ALL_SUBJECTS_QUERY, {
     onMutation: { when: /(update|create|delete)Subjects?/, run: ({ hardReset }) => hardReset() }
-  });  
-  
+  });
+
   $: booksSync($searchState);
   $: subjectsSync({});
 </script>
@@ -232,7 +251,7 @@ The `hardReset` method that's passed makes this easy. Let's see how to use this 
 <ShowData booksData={$booksState} subejctsData={$subjectsState} />
 ```
 
-Here we specify a regex matching every kind of book, or subject mutation, and upon completion, we just clear the cache, and reload by calling `hardReset()`. It's hard not to be a littler dissatisfied with this solution; the boilerplate is non-trivial. 
+Here we specify a regex matching every kind of book, or subject mutation, and upon completion, we just clear the cache, and reload by calling `hardReset()`. It's hard not to be a littler dissatisfied with this solution; the boilerplate is non-trivial.
 
 Assuming our GraphQL operations have a consistent naming structure—and they should, and in this case do—then some pretty obvious patterns emerge. We can write some basic helpers to remove some of this boilerplate.
 
@@ -262,8 +281,8 @@ which we _could_ use like this
   let searchState = getContext("search_params");
 
   let { queryState: booksState, sync: booksSync } = hardResetQuery("Book", BOOKS_QUERY);
-  let { queryState: subjectsState, sync: subjectsSync } = hardResetQuery("Subject", ALL_SUBJECTS_QUERY);  
-  
+  let { queryState: subjectsState, sync: subjectsSync } = hardResetQuery("Subject", ALL_SUBJECTS_QUERY);
+
   $: booksSync($searchState);
   $: subjectsSync({});
 </script>
@@ -290,7 +309,7 @@ export const bookHardResetQuery = (...args) => hardResetQuery("Book", ...args);
 export const subjectHardResetQuery = (...args) => hardResetQuery("Subject", ...args);
 ```
 
-which trims the code to just this
+which simplifies the code to just this
 
 ```svelte
 <script>
@@ -313,7 +332,7 @@ which trims the code to just this
 
 #### Soft Reset: Update current results, but clear the cache
 
-Let's say that on mutation you want to update your current results based on what was changed, clear all other cache entries, including the existing one, but **not** run any network requests. So if you're currently searching for an author of Dumas Malone, but one of the current results was written by Shelby Foote, and you click the book's edit button and fix it, you want that book to now show the updated values, but stay in the current results, since re-loading the current query and possibly having the book just vanish is bad UX in your opinion.
+Assume that after a mutation you want to update your current results based on what was changed, clear all cache entries, including the existing one, but **not** run any network requests. So if you're currently searching for an author of Dumas Malone, but one of the current results was written by Shelby Foote, and you click the book's edit button and fix it, you want that book to now show the updated value, but stay in the current results, since re-loading the current query and having the book just vanish is bad UX in your opinion.
 
 Here's the same component from above, but with our new cache strategy
 
@@ -360,6 +379,7 @@ Here's the same component from above, but with our new cache strategy
 <ShowData booksData={$booksState} subejctsData={$subjectsState} />
 
 ```
+
 Whenever a mutation comes back with `updateBook` or `updateBooks` results, we manually update our current results, then call `softReset`, which clears our cache, including the current cache result; so if you page up, then come back down to where you were, a **new** network request will be run, and your edited books may no longer be there, if they no longer match the search results. And likewise for subjects.
 
 Obviously this is more boilerplate than we'd ever want to write in practice, so let's tuck it behind a helper, like we did before.
@@ -376,9 +396,7 @@ export const softResetQuery = (type, queryToUse, options = {}) =>
       run: ({ softReset, currentResults }, resp) => {
         const updatedItems = resp[`update${type}s`]?.[`${type}s`] ?? [resp[`update${type}`][type]];
         updatedItems.forEach(updatedItem => {
-          let CachedItem = currentResults[`all${type}s`][`${type}s`].find(
-            item => item._id == updatedItem._id
-          );
+          let CachedItem = currentResults[`all${type}s`][`${type}s`].find(item => item._id == updatedItem._id);
           CachedItem && Object.assign(CachedItem, updatedItem);
         });
         softReset(currentResults);
@@ -411,9 +429,9 @@ which we can use like this
 <ShowData booksData={$booksState} subejctsData={$subjectsState} />
 ```
 
-#### Use Case 3: Manually update all affected cache entries
+#### Manually update all affected cache entries
 
-Let's say you want to intercept mutation results, and manually update your cache. This is difficult to get right, so be careful. You'll likely only want to do this with data that are not searched or filtered.
+Let's say you want to intercept mutation results, and manually update your cache. This is difficult to get right, so be careful. You'll likely only want to do this with data that are not searched or filtered, but even then, softReset will likely be good enough.
 
 For this, we can call the `subscribeMutation` method on the client object, and pass in the same `when` test, and `run` callback as before. Except now the `run` callback will receive a `refreshActiveQueries` callback, which we can use to force any queries showing data from a particular query to update itself from the now-updated cache. This function returns a cleanup function which you can call to remove the subscription.
 
@@ -512,16 +530,11 @@ export const syncQueryToCache = (query, type) => {
       when: new RegExp(`update${type}s?`),
       run: ({ refreshActiveQueries }, resp, variables) => {
         const cache = graphQLClient.getCache(query);
-        const newResults = resp[`update${type}`]
-          ? [resp[`update${type}`][type]]
-          : resp[`update${type}s`][`${type}s`];
+        const newResults = resp[`update${type}`] ? [resp[`update${type}`][type]] : resp[`update${type}s`][`${type}s`];
         const newResultsLookup = new Map(newResults.map(item => [item._id, item]));
 
         for (let [uri, { data }] of cache.entries) {
-          data[`all${type}s`][`${type}s`] = syncCollection(
-            data[`all${type}s`][`${type}s`],
-            newResultsLookup
-          );
+          data[`all${type}s`][`${type}s`] = syncCollection(data[`all${type}s`][`${type}s`], newResultsLookup);
         }
 
         refreshActiveQueries(query);
@@ -529,8 +542,8 @@ export const syncQueryToCache = (query, type) => {
     }
   ]);
 };
-
 ```
+
 which cuts the usage code to just this
 
 ```svelte
@@ -556,7 +569,7 @@ which cuts the usage code to just this
 <ShowData booksData={$booksState} subejctsData={$subjectsState} />
 ```
 
-The above code assumes this component will only ever render once. If that's not the case, put these calls to `subscribeMutation` somewhere else, that will only ever run one. A svelte `<script context="module">` section may be a good candidate. See [the docs](https://svelte.dev/docs#script_context_module) for more info. If you decide to go this route, be careful. Those script sections will run as soon as they're parsed, which means a component's module script further down the component tree will run *before* components further up. So if you try to set your default client in a module script in your root App component, and then set up subscriptions in module scripts in components further down the tree, you'll get a null reference exception, since the default client will not have been set. You'll instead want to set up your default client, and also any subscriptions in your root component (and also the root component for any code-split points). Or you could keep your client object as a local module's export, and just use that everywhere, and pass it to `setDefaultClient` in your app's entry point.
+The above code assumes this component will only ever render once. If that's not the case, put these calls to `subscribeMutation` somewhere else, that will only ever run one. A svelte `<script context="module">` section may be a good candidate. See [the docs](https://svelte.dev/docs#script_context_module) for more info. If you decide to go this route, be careful. Those script sections will run as soon as they're parsed, which means a component's module script further down the component tree will run _before_ components further up. So if you try to set your default client in a module script in your root App component, and then set up subscriptions in module scripts in components further down the tree, you'll get a null reference exception, since the default client will not have been set. You'll instead want to set up your default client, and also any subscriptions in your root component (and also the root component for any code-split points). Or you could keep your client object as a local module's export, and just use that everywhere, and pass it to `setDefaultClient` in your app's entry point.
 
 #### A note on cache management code
 
@@ -566,12 +579,7 @@ Assuming your GraphQL endpoint has a consistent naming scheme, it should be stra
 
 ## Manually running queries or mutations
 
-It's entirely possible some pieces of data may need to be loaded from, and stored in your state manager, rather than fetched via a component's lifecycle. The `query` and `mutation` stores run queries and mutations through the client object you're already setting via `setDefaultClient`. You can use its api to interact with your GraphQL endpoint manually if you need.
-
-### Client api
-
-- `runQuery(query: String, variables?: Object)`
-- `runMutation(mutation: String, variables?: Object)`
+It's possible some pieces of data may need to be loaded from, and stored in your state manager, rather than fetched via a component's lifecycle. The `query` and `mutation` stores run queries and mutations through the client object you're already setting via `setDefaultClient`. You can use its api to interact with your GraphQL endpoint manually if you need. See the `runQuery` and `runMutation` methods documented above.
 
 ## Use in old browsers
 
