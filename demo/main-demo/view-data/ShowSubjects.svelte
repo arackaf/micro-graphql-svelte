@@ -16,6 +16,10 @@
   <EditSubject subject={editingSubject} onCancel={() => (editingSubject = null)} />
 {/if}
 
+{#if data?.loading}
+  <h1>Loading...</h1>
+{/if}
+
 <ul>
   {#each data?.data?.allSubjects?.Subjects ?? [] as subject}
     <li>{subject.name} <button on:click={() => (editingSubject = subject)}>Edit</button></li>
