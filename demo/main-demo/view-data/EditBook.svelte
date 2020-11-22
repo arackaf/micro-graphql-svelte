@@ -1,6 +1,24 @@
 <script>
   export let book;
   export let onCancel;
+
+  import { mutation } from "../../../src/index";
+  import { MODIFY_BOOK_TITLE } from "../../savedQueries";
+
+  let inputEl;
+
+  const { mutationState } = mutation(MODIFY_BOOK_TITLE);
+
+  let missingTitle = false;
+  
+  const doSave = () => {
+    let newTitle = inputEl.value;
+    missingTitle = !newTitle;
+    if (missingTitle) {
+      return;
+    }
+    $mutationState.runMutation({ _id: book._id, title: newTitle });
+  };
 </script>
 
 <style>
@@ -11,9 +29,14 @@
     padding: 3px;
     font-size: 16px;
   }
+
+  .error {
+    color: red;
+  }
 </style>
 
 <div><span style="font-weight: bold;">Edit</span> {book.title}</div>
-<input value={book.title} />
-<button>Save</button>
+<input bind:this={inputEl} value={book.title} />
+{#if missingTitle}<span class="error">Enter a title please</span>{/if}
+<button on:click={doSave}>Save</button>
 <button on:click={onCancel}>Cancel</button>
