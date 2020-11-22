@@ -7,10 +7,6 @@
 
   let { queryState: booksState, sync: booksSync } = query(BOOKS_QUERY);
   $: booksSync($searchState);
-
-  setTimeout(() => {
-    $booksState.reload();
-  }, 3000);
 </script>
 
 <span> {$booksState.currentQuery} </span>

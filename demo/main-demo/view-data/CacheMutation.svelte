@@ -1,18 +1,14 @@
 <script>
+  import { query } from "../../../src/index";
   import { getContext } from "svelte";
   import ShowData from "./ShowData.svelte";
-  import { getDefaultClient, query } from "../../../src/index";
   import { BOOKS_QUERY, ALL_SUBJECTS_QUERY } from "../../savedQueries";
+  import { syncQueryToCache, syncCollection } from "./cacheHelpers";
 
-  const graphQLClient = getDefaultClient();
-
-  // const syncCollection = (current, newResultsLookup) => {
-  //   return current.map(item => {
-  //     const updatedItem = newResultsLookup.get(item._id);
-  //     return updatedItem ? Object.assign({}, item, updatedItem) : item;
-  //   });
-  // };
-
+  syncQueryToCache(BOOKS_QUERY, "Book");
+  syncQueryToCache(ALL_SUBJECTS_QUERY, "Subject");
+      
+  // const graphQLClient = getDefaultClient();
   // graphQLClient.subscribeMutation([
   //   {
   //     when: /updateBooks?/,
@@ -46,40 +42,6 @@
   //     }
   //   }
   // ]);
-
-  const syncCollection = (current, newResultsLookup) => {
-    return current.map(item => {
-      const updatedItem = newResultsLookup.get(item._id);
-      return updatedItem ? Object.assign({}, item, updatedItem) : item;
-    });
-  };
-
-  export const syncQueryToCache = (query, type) => {
-    graphQLClient.subscribeMutation([
-      {
-        when: new RegExp(`update${type}s?`),
-        run: ({ refreshActiveQueries }, resp, variables) => {
-          const cache = graphQLClient.getCache(query);
-          const newResults = resp[`update${type}`]
-            ? [resp[`update${type}`][type]]
-            : resp[`update${type}s`][`${type}s`];
-          const newResultsLookup = new Map(newResults.map(item => [item._id, item]));
-
-          for (let [uri, { data }] of cache.entries) {
-            data[`all${type}s`][`${type}s`] = syncCollection(
-              data[`all${type}s`][`${type}s`],
-              newResultsLookup
-            );
-          }
-
-          refreshActiveQueries(query);
-        }
-      }
-    ]);
-  };
-
-  syncQueryToCache(BOOKS_QUERY, "Book");
-  syncQueryToCache(ALL_SUBJECTS_QUERY, "Subject");
 
   let searchState = getContext("search_params");
 

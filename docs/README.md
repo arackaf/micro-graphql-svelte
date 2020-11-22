@@ -414,67 +414,90 @@ which we can use to eliminate that boilerplate
 
 Let's say you want to intercept mutation results, and manually update your cache. This is difficult to get right, so be careful. You'll likely only want to do this with data that are not searched or filtered.
 
-For this, we can call the `subscribeMutation` method right on the client object, and pass in the same `when` test, and `run` callback as before. Except now the `run` callback will receive a `refreshActiveQueries` callback, which we can use to force any hooks showing data from a particular query to update itself from the now-updated cache.
+For this, we can call the `subscribeMutation` method on the client object, and pass in the same `when` test, and `run` callback as before. Except now the `run` callback will receive a `refreshActiveQueries` callback, which we can use to force any queries showing data from a particular query to update itself from the now-updated cache.
 
 The manual solution might look something like this
 
 ```javascript
-const graphQLClient = getDefaultClient();
-
-const syncCollection = (current, newResultsLookup) => {
+//cacheHelpers.js
+export const syncCollection = (current, newResultsLookup) => {
   return current.map(item => {
     const updatedItem = newResultsLookup.get(item._id);
     return updatedItem ? Object.assign({}, item, updatedItem) : item;
   });
 };
+```
 
-graphQLClient.subscribeMutation([
-  {
-    when: /updateBooks?/,
-    run: ({ refreshActiveQueries }, resp, variables) => {
-      const cache = graphQLClient.getCache(BOOKS_QUERY);
-      const newResults = resp.updateBook ? [resp.updateBook.Book] : resp.updateBooks.Books;
-      const newResultsLookup = new Map(newResults.map(item => [item._id, item]));
+and
 
-      for (let [uri, { data }] of cache.entries) {
-        data["allBooks"]["Books"] = syncCollection(data["allBooks"]["Books"], newResultsLookup);
+```svelte
+<script>
+  import { getDefaultClient, query } from "micro-graphql-svelte";
+  import { getContext } from "svelte";
+  import ShowData from "./ShowData.svelte";
+  import { BOOKS_QUERY, ALL_SUBJECTS_QUERY } from "../../savedQueries";
+  import { syncCollection } from "./cacheHelpers";
+
+  const graphQLClient = getDefaultClient();
+
+  graphQLClient.subscribeMutation([
+    {
+      when: /updateBooks?/,
+      run: ({ refreshActiveQueries }, resp, variables) => {
+        const cache = graphQLClient.getCache(BOOKS_QUERY);
+        const newResults = resp.updateBook ? [resp.updateBook.Book] : resp.updateBooks.Books;
+        const newResultsLookup = new Map(newResults.map(item => [item._id, item]));
+
+        for (let [uri, { data }] of cache.entries) {
+          data["allBooks"]["Books"] = syncCollection(data["allBooks"]["Books"], newResultsLookup);
+        }
+
+        refreshActiveQueries(BOOKS_QUERY);
       }
-
-      refreshActiveQueries(BOOKS_QUERY);
     }
-  }
-]);
+  ]);
 
-syncQueryToCache(BOOKS_QUERY, "Book");
+  graphQLClient.subscribeMutation([
+    {
+      when: /updateSubjects?/,
+      run: ({ refreshActiveQueries }, resp, variables) => {
+        const cache = graphQLClient.getCache(ALL_SUBJECTS_QUERY);
+        const newResults = resp.updateSubject
+          ? [resp.updateSubject.Subject]
+          : resp.updateSubjects.Subjects;
+        const newResultsLookup = new Map(newResults.map(item => [item._id, item]));
 
-export default props => {
-  const [page, setPage] = useState(1);
-  const { data, loading } = useQuery(BOOKS_QUERY, { page });
+        for (let [uri, { data }] of cache.entries) {
+          data["allSubjects"]["Subjects"] = syncCollection(
+            data["allSubjects"]["Subjects"],
+            newResultsLookup
+          );
+        }
 
-  const books = data?.allBooks?.Books ?? [];
+        refreshActiveQueries(ALL_SUBJECTS_QUERY);
+      }
+    }
+  ]);
 
-  return (
-    <div>
-      <div>
-        {books.map(book => (
-          <div key={book._id}>{book.title}</div>
-        ))}
-      </div>
-      <RenderPaging page={page} setPage={setPage} />
-      {loading ? <span>Loading ...</span> : null}
-    </div>
-  );
-};
+  let searchState = getContext("search_params");
+
+  let { queryState: booksState, sync: booksSync } = query(BOOKS_QUERY);
+  let { queryState: subjectsState, sync: subjectsSync } = query(ALL_SUBJECTS_QUERY);
+
+  $: booksSync($searchState);
+  $: subjectsSync({});
+</script>
+
+<ShowData booksData={$booksState} subejctsData={$subjectsState} />
 ```
 
 It's a lot of code, but as always the idea is that you'd wrap it all into some re-usable helpers, like this
 
 ```javascript
+//cacheHelpers.js
 import { getDefaultClient } from "micro-graphql-svelte";
 
-const graphQLClient = getDefaultClient();
-
-const syncCollection = (current, newResultsLookup) => {
+export const syncCollection = (current, newResultsLookup) => {
   return current.map(item => {
     const updatedItem = newResultsLookup.get(item._id);
     return updatedItem ? Object.assign({}, item, updatedItem) : item;
@@ -482,16 +505,22 @@ const syncCollection = (current, newResultsLookup) => {
 };
 
 export const syncQueryToCache = (query, type) => {
+  const graphQLClient = getDefaultClient();
   graphQLClient.subscribeMutation([
     {
       when: new RegExp(`update${type}s?`),
       run: ({ refreshActiveQueries }, resp, variables) => {
         const cache = graphQLClient.getCache(query);
-        const newResults = resp[`update${type}`] ? [resp[`update${type}`][type]] : resp[`update${type}s`][`${type}s`];
+        const newResults = resp[`update${type}`]
+          ? [resp[`update${type}`][type]]
+          : resp[`update${type}s`][`${type}s`];
         const newResultsLookup = new Map(newResults.map(item => [item._id, item]));
 
         for (let [uri, { data }] of cache.entries) {
-          data[`all${type}s`][`${type}s`] = syncCollection(data[`all${type}s`][`${type}s`], newResultsLookup);
+          data[`all${type}s`][`${type}s`] = syncCollection(
+            data[`all${type}s`][`${type}s`],
+            newResultsLookup
+          );
         }
 
         refreshActiveQueries(query);
@@ -499,30 +528,31 @@ export const syncQueryToCache = (query, type) => {
     }
   ]);
 };
+
 ```
 which cuts the usage code to just this
 
-```javascript
-syncQueryToCache(BOOKS_QUERY, "Book");
+```svelte
+<script>
+  import { query } from "micro-graphql-svelte";
+  import { getContext } from "svelte";
+  import ShowData from "./ShowData.svelte";
+  import { BOOKS_QUERY, ALL_SUBJECTS_QUERY } from "../../savedQueries";
+  import { syncQueryToCache } from "./cacheHelpers";
 
-export default props => {
-  const [page, setPage] = useState(1);
-  const { data, loading } = useQuery(BOOKS_QUERY, { page });
+  syncQueryToCache(BOOKS_QUERY, "Book");
+  syncQueryToCache(ALL_SUBJECTS_QUERY, "Subject");
 
-  const books = data?.allBooks?.Books ?? [];
+  let searchState = getContext("search_params");
 
-  return (
-    <div>
-      <div>
-        {books.map(book => (
-          <div key={book._id}>{book.title}</div>
-        ))}
-      </div>
-      <RenderPaging page={page} setPage={setPage} />
-      {loading ? <span>Loading ...</span> : null}
-    </div>
-  );
-};
+  let { queryState: booksState, sync: booksSync } = query(BOOKS_QUERY);
+  let { queryState: subjectsState, sync: subjectsSync } = query(ALL_SUBJECTS_QUERY);
+
+  $: booksSync($searchState);
+  $: subjectsSync({});
+</script>
+
+<ShowData booksData={$booksState} subejctsData={$subjectsState} />
 ```
 
 #### A note on cache management code
@@ -533,7 +563,7 @@ Assuming your GraphQL endpoint has a consistent naming scheme, it should be stra
 
 ## Manually running queries or mutations
 
-It's entirely possible some pieces of data may need to be loaded from, and stored in your state manager, rather than fetched via a component's lifecycle; this is easily accommodated. The `useQuery` hook runs queries and mutations through the client object you're already setting via `setDefaultClient`. You can use its api to interact with your GraphQL endpoint manually if you need.
+It's entirely possible some pieces of data may need to be loaded from, and stored in your state manager, rather than fetched via a component's lifecycle. The `query` and `mutation` stores run queries and mutations through the client object you're already setting via `setDefaultClient`. You can use its api to interact with your GraphQL endpoint manually if you need.
 
 ### Client api
 
