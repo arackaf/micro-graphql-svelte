@@ -10,14 +10,14 @@
   const { mutationState } = mutation(MODIFY_BOOK_TITLE);
 
   let missingTitle = false;
-  
+
   const doSave = () => {
     let newTitle = inputEl.value;
     missingTitle = !newTitle;
     if (missingTitle) {
       return;
     }
-    $mutationState.runMutation({ _id: book._id, title: newTitle });
+    $mutationState.runMutation({ _id: book._id, title: newTitle }).then(() => onCancel());
   };
 </script>
 
@@ -40,3 +40,4 @@
 {#if missingTitle}<span class="error">Enter a title please</span>{/if}
 <button on:click={doSave}>Save</button>
 <button on:click={onCancel}>Cancel</button>
+{#if $mutationState.running}<span>Saving ...</span>{/if}
