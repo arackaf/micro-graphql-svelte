@@ -3,6 +3,7 @@
   import { onDestroy, setContext } from "svelte";
 
   import HardReset from "./view-data/HardReset";
+  import SoftReset from "./view-data/SoftReset";
   import { writable } from "svelte/store";
 
   let inputEl;
@@ -32,5 +33,6 @@
 
   <hr />
 
-  <HardReset />
+  <!-- <HardReset /> -->
+  <SoftReset />
 </div>
