@@ -3,8 +3,7 @@ import mutation from "./mutation";
 import Client, { defaultClientManager } from "./client";
 import compress from "./compress";
 import Cache from "./cache";
-import { buildQuery, buildMutation } from "./util";
 
 const { setDefaultClient, getDefaultClient } = defaultClientManager;
 
-export { Client, compress, setDefaultClient, getDefaultClient, buildQuery, buildMutation, Cache, query, mutation };
+export { Client, compress, setDefaultClient, getDefaultClient, Cache, query, mutation };

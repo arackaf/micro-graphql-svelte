@@ -66,9 +66,6 @@ type BuildMutationOptions = {
   client?: Client;
 };
 
-export const buildQuery: (queryText: string, variables?: any, options?: BuildQueryOptions) => QueryPacket;
-export const buildMutation: (mutationText: string, options?: BuildQueryOptions) => MutationPacket;
-
 type IReactComponent<P = any> = StatelessComponent<P> | ComponentClass<P> | ClassicComponentClass<P>;
 
 export const compress: any;
