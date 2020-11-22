@@ -6,6 +6,7 @@
   import SoftReset from "./view-data/SoftReset";
   import CacheMutation from "./view-data/CacheMutation";
   import { writable } from "svelte/store";
+  import BasicCodeSandbox from "./BasicCodeSandbox";
 
   let inputEl;
   const searchStateStore = writable(getSearchState());
@@ -31,6 +32,10 @@
 
   <div>{JSON.stringify({ page, search })}</div>
   <div>{JSON.stringify($searchStateStore)}</div>
+
+  <hr />
+
+  <BasicCodeSandbox />
 
   <hr />
 

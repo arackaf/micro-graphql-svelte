@@ -74,30 +74,21 @@ client.preload(YourQuery, variables);
 
 ### Queries and Mutations
 
-This project exports a `useQuery`, `useSuspenseQuery`, and `useMutation` hook.
+This project exports a `query`, and `mutation` function.
 
-```javascript
-import { useQuery, useMutation } from "micro-graphql-svelte";
-
-const ComponentWithQueryAndMutation = props => {
-  let { loading, loaded, data, currentQuery } = useQuery(someQuery, { search: props.search }, options);
-  let { running, finished, runMutation } = useMutation(someMutation);
-
-  return <DoStuff {...props} {...{ loading, loaded, currentQuery, data, running, runMutation }} />;
-};
-```
-
-### Building queries
+### Queries
 
 ```js
-const { data } = useQuery(query, variables, options);
+let { queryState, sync } = query(YOUR_QUERY);
+$: booksSync($searchState);
 ```
+
+query takes the following arguments
 
 <!-- prettier-ignore -->
 | Arg | Description | 
 | -------| ----------- |
 | `query: string` | The query text |
-| `variables: object`  | The query's variables |
 | `options: object`  | The query's options (optional) |
 
 The options argument, if supplied, can contain these properties
@@ -107,15 +98,14 @@ The options argument, if supplied, can contain these properties
 | -------| ----------- |
 | `onMutation` | A map of mutations, along with handlers. This is how you update your cached results after mutations, and is explained more fully below |
 | `client`  | Manually pass in a client to be used for this query, which will override the default client|
-| `active`  | If passed, and if false, disables any further query loading. If not specified, the hook will update automatically, as expected |
 
-Be sure to use the `compress` tag to remove un-needed whitespace from your query text, since it will be sent via HTTP GET—for more information, see [here](./compress).
+Be sure to use the `compress` tag to remove un-needed whitespace from your query text, since it will be sent via HTTP GET—for more information, see [here](./compress). An even better option would be to use my [persisted queries helper](https://github.com/arackaf/generic-persistgraphql). This not only removes the entire query text from your network requests altogether, but also from your bundled code.
 
-An even better option would be to use my [persisted queries helper](https://github.com/arackaf/generic-persistgraphql). This not only removes the entire query text from your network requests altogether, but also from your bundled code.
+`query` returns an object with a `queryState` property, which will be a store with your query's current results, as well as a `sync` function, which you can call anytime to update the query's current variables. Your query will not actually run until you've called sync. If your query does not need any variables, then just call it immediately with an empty object.
 
 ### Query results
 
-The `useQuery` hook returns an object with the following properties.
+The `queryState` store returned from your `query()` call has the following properties.
 
 <!-- prettier-ignore -->
 | Props | Description |
@@ -130,11 +120,13 @@ The `useQuery` hook returns an object with the following properties.
 | `softReset` |`function`: Clears the cache, but does **not** re-issue any queries. It can optionally take an argument of new, updated results, which will replace the current `data` props |
 | `hardReset` |`function`: Clears the cache, and re-load the current query from the network|
 
-### Building mutations
+### Mutations
 
 ```js
-const { runMutation, running } = useMutation(mutation, options);
+const { mutationState } = mutation(YOUR_MUTATION);
 ```
+
+The mutation function takes the following arguments. 
 
 <!-- prettier-ignore -->
 | Arg         | Description  |
@@ -151,14 +143,14 @@ The options argument, if supplied, can contain this property
 
 ### Mutation results
 
-`useMutation` returns an object with the following properties.
+`mutation` returns a store with the following properties.
 
 <!-- prettier-ignore -->
 | Option        | Description  |
 | ------------- | --------- |
 | `running`     | Mutation is executing |
 | `finished`    | Mutation has finished executing|
-| `runMutation` | A function you can call when you want to run your mutation. Pass it with your variables |
+| `runMutation` | A function you can call when you want to run your mutation. Pass it your variables |
 
 ## Caching
 
@@ -195,7 +187,7 @@ The cache object has the following properties and methods
 
 The onMutation option that query options take is an object, or array of objects, of the form `{ when: string|regularExpression, run: function }`
 
-`when` is a string or regular expression that's tested against each result of any mutations that finish. If the mutation has any matches, then `run` will be called with three arguments: an object with these properties, described below, `{ softReset, currentResults, hardReset, cache, refresh }`; the entire mutation result; and the mutation's variables object.
+`when` is a string or regular expression that's tested against each result of any mutations that finish. If the mutation has any result set names that match, then `run` will be called with three arguments: an object with these properties, described below, `{ softReset, currentResults, hardReset, cache, refresh }`; the entire mutation result; and the mutation's `variables` object.
 
 <!-- prettier-ignore -->
 | Arg  | Description  |
@@ -206,75 +198,49 @@ The onMutation option that query options take is an object, or array of objects,
 | `cache`  | The actual cache object. You can enumerate its entries, and update whatever you need.|
 | `refresh`   | Refreshes the current query, from cache if present. You'll likely want to call this after modifying the cache.  |
 
-Many use cases follow. They're based on an hypothetical book tracking website since, if we're honest, the Todo example has been stretched to its limit—and also I built a book tracking website and so already have some data to work with :D
+Many use cases follow. They're based on a hypothetical book tracking website.
 
-The code below uses a publicly available GraphQL endpoint created by my [mongo-graphql-starter project](https://github.com/arackaf/mongo-graphql-starter). You can run these examples from the demo folder of this repository. Just run `npm i` then start the `demo-client` and `demo-server` scripts in separate terminals, and open `http://localhost:3000/`
+The code below uses a publicly available GraphQL endpoint created by my [mongo-graphql-starter project](https://github.com/arackaf/mongo-graphql-starter). You can run these examples from the demo folder of this repository. Just run `npm i` then run the `npm run demo` and `npm starte` scripts in separate terminals, and open `http://localhost:8082/`
 
 #### Hard Reset: Reload the query after any relevant mutation
 
 Let's say that whenever a mutation happens, we want to immediately invalidate any related queries' caches, and reload the current queries from the network. We understand that this may cause a book that we just edited to immediately disappear from our current search results, since it no longer matches our search criteria, but that's what we want.
 
-The hard reload method that's passed makes this easy. Let's see how to use this in a (contrived) component that queries, and displays some books.
+The hard reload method that's passed makes this easy. Let's see how to use this in a (contrived) component that queries, and displays some books and subjects.
 
-```javascript
-export const Books = props => {
-  const [page, setPage] = useState(1);
-  const { data, loading } = useQuery(
-    BOOKS_QUERY,
-    { page },
-    { onMutation: { when: /(update|create|delete)Books?/, run: ({ hardReset }) => hardReset() } }
-  );
+```svelte
+<script>
+  import { query } from "micro-graphql-svelte";
+  import { getContext } from "svelte";
+  import ShowData from "./ShowData.svelte";
+  import { BOOKS_QUERY, ALL_SUBJECTS_QUERY } from "../../savedQueries";
 
-  const books = data?.allBooks?.Books ?? [];
+  let searchState = getContext("search_params");
 
-  return (
-    <div>
-      <div>
-        {books.map(book => (
-          <div key={book._id}>{book.title}</div>
-        ))}
-      </div>
-      <RenderPaging page={page} setPage={setPage} />
-      {loading ? <span>Loading ...</span> : null}
-    </div>
-  );
-};
+  let { queryState: booksState, sync: booksSync } = query(BOOKS_QUERY, {
+    onMutation: { when: /(update|create|delete)Books?/, run: ({ hardReset }) => hardReset() }
+  });
+  let { queryState: subjectsState, sync: subjectsSync } = query(ALL_SUBJECTS_QUERY, {
+    onMutation: { when: /(update|create|delete)Subjects?/, run: ({ hardReset }) => hardReset() }
+  });  
+  
+  $: booksSync($searchState);
+  $: subjectsSync({});
+</script>
+
+<ShowData booksData={$booksState} subejctsData={$subjectsState} />
 ```
 
-Here we specify a regex matching every kind of book mutation we have, and upon completion, we just clear the cache, and reload by calling `hardReset()`. It's hard not to be at least a littler dissatisfied with this solution; the boilerplate is non-trivial. Let's take a look at a similar (again contrived) component, but for the subjects we can apply to books
+Here we specify a regex matching every kind of book, or subject mutation, and upon completion, we just clear the cache, and reload by calling `hardReset()`. It's hard not to be at least a littler dissatisfied with this solution; the boilerplate is non-trivial. 
+
+Assuming our GraphQL operations have a consistent naming structure—and they should, and in this case do—then some pretty obvious patterns emerge. We can write some basic helpers to remove some of this boilerplate.
 
 ```javascript
-export const Subjects = props => {
-  const [page, setPage] = useState(1);
-  const { data, loading } = useQuery(
-    SUBJECTS_QUERY,
-    { page },
-    {
-      onMutation: { when: /(update|create|delete)Subjects?/, run: ({ hardReset }) => hardReset() }
-    }
-  );
+//hardResetHelpers.js
+import { query } from "micro-graphql-svelte";
 
-  const subjects = data?.allSubjects?.Subjects ?? [];
-
-  return (
-    <div>
-      <div>
-        {subjects.map(subject => (
-          <div key={subject._id}>{subject.name}</div>
-        ))}
-      </div>
-      <RenderPaging page={page} setPage={setPage} />
-      {loading ? <span>Loading ...</span> : null}
-    </div>
-  );
-};
-```
-
-Assuming our GraphQL operations have a consistent naming structure—and they should, and in this case do—then some pretty obvious patterns emerge. We can leverage the composability of hooks and emit this structure from the name of our type, like so
-
-```javascript
-export const useHardResetQuery = (type, query, variables, options = {}) =>
-  useQuery(query, variables, {
+export const hardResetQuery = (type, queryToRun, options = {}) =>
+  query(queryToRun, {
     ...options,
     onMutation: {
       when: new RegExp(`(update|create|delete)${type}s?`),
@@ -285,39 +251,63 @@ export const useHardResetQuery = (type, query, variables, options = {}) =>
 
 which we _could_ use like this
 
-```javascript
-const { data, loading } = useHardResetQuery("Book", BOOKS_QUERY, { page });
+```svelte
+<script>
+  import { getContext } from "svelte";
+  import ShowData from "./ShowData.svelte";
+  import { BOOKS_QUERY, ALL_SUBJECTS_QUERY } from "../../savedQueries";
+  import { hardResetQuery } from "./hardResetHelpers"
+
+  let searchState = getContext("search_params");
+
+  let { queryState: booksState, sync: booksSync } = hardResetQuery("Book", BOOKS_QUERY);
+  let { queryState: subjectsState, sync: subjectsSync } = hardResetQuery("Subject", ALL_SUBJECTS_QUERY);  
+  
+  $: booksSync($searchState);
+  $: subjectsSync({});
+</script>
+
+<ShowData booksData={$booksState} subejctsData={$subjectsState} />
 ```
 
-but really, why not just go the extra mile and make hooks for our various types for which hard resetting applies, like so
+but really, why not just go the extra mile and make wrappers for our various types, like so
 
 ```javascript
-export const useBookHardResetQuery = (...args) => useHardResetQuery("Book", ...args);
-export const useSubjectHardResetQuery = (...args) => useHardResetQuery("Subject", ...args);
+//hardResetHelpers.js
+import { query } from "micro-graphql-svelte";
+
+export const hardResetQuery = (type, queryToRun, options = {}) =>
+  query(queryToRun, {
+    ...options,
+    onMutation: {
+      when: new RegExp(`(update|create|delete)${type}s?`),
+      run: ({ hardReset }) => hardReset()
+    }
+  });
+
+export const bookHardResetQuery = (...args) => hardResetQuery("Book", ...args);
+export const subjectHardResetQuery = (...args) => hardResetQuery("Subject", ...args);
 ```
 
 which trims the code to just this
 
-```javascript
-export const Books = props => {
-  const [page, setPage] = useState(1);
-  const { data, loading } = useBookHardResetQuery(BOOKS_QUERY, { page });
+```svelte
+<script>
+  import { getContext } from "svelte";
+  import ShowData from "./ShowData.svelte";
+  import { BOOKS_QUERY, ALL_SUBJECTS_QUERY } from "../../savedQueries";
+  import { bookHardResetQuery, subjectHardResetQuery } from "./hardResetHelpers";
 
-  const books = data?.allBooks?.Books ?? [];
+  let searchState = getContext("search_params");
 
-  return (
-    <div>
-      <div>
-        {books.map(book => (
-          <div key={book._id}>{book.title}</div>
-        ))}
-      </div>
-      <RenderPaging page={page} setPage={setPage} />
-      {loading ? <span>Loading ...</span> : null}
-    </div>
-  );
-};
-);
+  let { queryState: booksState, sync: booksSync } = bookHardResetQuery(BOOKS_QUERY);
+  let { queryState: subjectsState, sync: subjectsSync } = subjectHardResetQuery(ALL_SUBJECTS_QUERY);
+
+  $: booksSync($searchState);
+  $: subjectsSync({});
+</script>
+
+<ShowData booksData={$booksState} subejctsData={$subjectsState} />
 ```
 
 #### Soft Reset: Update current results, but clear the cache
