@@ -204,9 +204,9 @@ The code below uses a publicly available GraphQL endpoint created by my [mongo-g
 
 #### Hard Reset: Reload the query after any relevant mutation
 
-Let's say that whenever a mutation happens, we want to immediately invalidate any related queries' caches, and reload the current queries from the network. We understand that this may cause a book that we just edited to immediately disappear from our current search results, since it no longer matches our search criteria, but that's what we want.
+Let's say that whenever a mutation happens, we want to immediately invalidate any related queries' caches, and reload the current data from the network. We understand this may cause a book that we just edited to immediately disappear from our current search results, since it no longer matches our search criteria.
 
-The hard reload method that's passed makes this easy. Let's see how to use this in a (contrived) component that queries, and displays some books and subjects.
+The `hardReset` method that's passed makes this easy. Let's see how to use this in a (contrived) component that queries, and displays some books and subjects.
 
 ```svelte
 <script>
@@ -231,7 +231,7 @@ The hard reload method that's passed makes this easy. Let's see how to use this 
 <ShowData booksData={$booksState} subejctsData={$subjectsState} />
 ```
 
-Here we specify a regex matching every kind of book, or subject mutation, and upon completion, we just clear the cache, and reload by calling `hardReset()`. It's hard not to be at least a littler dissatisfied with this solution; the boilerplate is non-trivial. 
+Here we specify a regex matching every kind of book, or subject mutation, and upon completion, we just clear the cache, and reload by calling `hardReset()`. It's hard not to be a littler dissatisfied with this solution; the boilerplate is non-trivial. 
 
 Assuming our GraphQL operations have a consistent naming structure—and they should, and in this case do—then some pretty obvious patterns emerge. We can write some basic helpers to remove some of this boilerplate.
 
@@ -270,7 +270,7 @@ which we _could_ use like this
 <ShowData booksData={$booksState} subejctsData={$subjectsState} />
 ```
 
-but really, why not just go the extra mile and make wrappers for our various types, like so
+but really, why not go the extra mile and make wrappers for our various types, like so
 
 ```javascript
 //hardResetHelpers.js
@@ -312,7 +312,7 @@ which trims the code to just this
 
 #### Soft Reset: Update current results, but clear the cache
 
-Let's say that, upon successful mutation, you want to update your current results based on what was changed, clear all other cache entries, including the existing one, but **not** run any network requests. So if you're currently searching for an author of "Dumas Malone," but one of the current results was clearly written by Shelby Foote, and you click the book's edit button and fix it, you want that book to now show the updated values, but stay in the current results, since re-loading the current query and having the book just vanish is bad UX in your opinion.
+Let's say that on mutation you want to update your current results based on what was changed, clear all other cache entries, including the existing one, but **not** run any network requests. So if you're currently searching for an author of Dumas Malone, but one of the current results was written by Shelby Foote, and you click the book's edit button and fix it, you want that book to now show the updated values, but stay in the current results, since re-loading the current query and possibly having the book just vanish is bad UX in your opinion.
 
 Here's the same component from above, but with our new cache strategy
 
@@ -389,7 +389,7 @@ export const bookSoftResetQuery = (...args) => softResetQuery("Book", ...args);
 export const subjectSoftResetQuery = (...args) => softResetQuery("Subject", ...args);
 ```
 
-which we can use to eliminate that boilerplate 
+which we can use like this
 
 ```svelte
 <script>
@@ -414,7 +414,7 @@ which we can use to eliminate that boilerplate
 
 Let's say you want to intercept mutation results, and manually update your cache. This is difficult to get right, so be careful. You'll likely only want to do this with data that are not searched or filtered.
 
-For this, we can call the `subscribeMutation` method on the client object, and pass in the same `when` test, and `run` callback as before. Except now the `run` callback will receive a `refreshActiveQueries` callback, which we can use to force any queries showing data from a particular query to update itself from the now-updated cache.
+For this, we can call the `subscribeMutation` method on the client object, and pass in the same `when` test, and `run` callback as before. Except now the `run` callback will receive a `refreshActiveQueries` callback, which we can use to force any queries showing data from a particular query to update itself from the now-updated cache. This function returns a cleanup function which you can call to remove the subscription.
 
 The manual solution might look something like this
 
@@ -554,6 +554,8 @@ which cuts the usage code to just this
 
 <ShowData booksData={$booksState} subejctsData={$subjectsState} />
 ```
+
+The above code assumes this component will only ever render once. If that's not the case, put these calls to `subscribeMutation` somewhere else in your code, that will only ever run one. A svelte `<script context="module">` section may be a good candidate. See [the docs](https://svelte.dev/docs#script_context_module) for more info. If you decide to try this route, be careful. Those sections will run as soon as they're parsed, which means a component's module script further down the component tree will run before components further up the tree. So if you try to set your default client in a module script in your root App component, and then set up subscriptions in module scripts in components further down the tree, you'll get a null reference exception. You'll instead want to set up your default client, and also any subscriptions in your root component (and also the root component for any code-split points).
 
 #### A note on cache management code
 
