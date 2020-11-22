@@ -314,117 +314,100 @@ which trims the code to just this
 
 Let's say that, upon successful mutation, you want to update your current results based on what was changed, clear all other cache entries, including the existing one, but **not** run any network requests. So if you're currently searching for an author of "Dumas Malone," but one of the current results was clearly written by Shelby Foote, and you click the book's edit button and fix it, you want that book to now show the updated values, but stay in the current results, since re-loading the current query and having the book just vanish is bad UX in your opinion.
 
-Here's the same books component as above, but with our new cache strategy
+Here's the same component from above, but with our new cache strategy
 
-```javascript
-export default props => {
-  const [page, setPage] = useState(1);
-  const { data, loading } = useQuery(
-    BOOKS_QUERY,
-    { page },
-    {
-      onMutation: {
-        when: /updateBooks?/,
-        run: ({ softReset, currentResults }, resp) => {
-          const updatedBooks = resp.updateBooks?.Books ?? [resp.updateBook.Book];
-          updatedBooks.forEach(book => {
-            let CachedBook = currentResults.allBooks.Books.find(b => b._id == book._id);
-            CachedBook && Object.assign(CachedBook, book);
-          });
-          softReset(currentResults);
-        }
+```svelte
+<script>
+  import { query } from "micro-graphql-svelte";
+  import { getContext } from "svelte";
+  import ShowData from "./ShowData.svelte";
+  import { BOOKS_QUERY, ALL_SUBJECTS_QUERY } from "../../savedQueries";
+
+  let searchState = getContext("search_params");
+
+  let { queryState: booksState, sync: booksSync } = query(BOOKS_QUERY, {
+    onMutation: {
+      when: /(update|create|delete)Books?/,
+      run: ({ softReset, currentResults }, resp) => {
+        const updatedBooks = resp.updateBooks?.Books ?? [resp.updateBook.Book];
+        updatedBooks.forEach(book => {
+          let CachedBook = currentResults.allBooks.Books.find(b => b._id == book._id);
+          CachedBook && Object.assign(CachedBook, book);
+        });
+        softReset(currentResults);
       }
     }
-  );
+  });
+  let { queryState: subjectsState, sync: subjectsSync } = query(ALL_SUBJECTS_QUERY, {
+    onMutation: {
+      when: /(update|create|delete)Subjects?/,
+      run: ({ softReset, currentResults }, resp) => {
+        const updatedSubjects = resp.updateSubjects?.Subjects ?? [resp.updateSubject.Subject];
+        updatedSubjects.forEach(subject => {
+          let CachedSubject = currentResults.allSubjects.Subjects.find(b => b._id == subject._id);
+          CachedSubject && Object.assign(CachedSubject, subject);
+        });
+        softReset(currentResults);
+      }
+    }
+  });
 
-  const books = data?.allBooks?.Books ?? [];
+  $: booksSync($searchState);
+  $: subjectsSync({});
+</script>
 
-  return (
-    <div>
-      <div>
-        {books.map(book => (
-          <div key={book._id}>{book.title}</div>
-        ))}
-      </div>
-      <RenderPaging page={page} setPage={setPage} />
-      {loading ? <span>Loading ...</span> : null}
-    </div>
-  );
-};
+<ShowData booksData={$booksState} subejctsData={$subjectsState} />
+
 ```
+Whenever a mutation comes back with `updateBook` or `updateBooks` results, we manually update our current results, then call `softReset`, which clears our cache, including the current cache result; so if you page up, then come back down to where you were, a **new** network request will be run, and your edited books may no longer be there, if they no longer match the search results. And likewise for subjects.
 
-Whenever a mutation comes back with `updateBook` or `updateBooks` results, we manually update our current results, then call `softReset`, which clears our cache, including the current cache result; so if you page up, then come back down to where you were, a **new** network request will be run, and your edited books may no longer be there, if they no longer match the search results.
-
-Obviously this is more boilerplate than we'd every want to write in practice, so let's tuck it behind a custom hook, like we did before.
+Obviously this is more boilerplate than we'd ever want to write in practice, so let's tuck it behind a helper, like we did before.
 
 ```javascript
-import { useQuery } from "micro-graphql-svelte";
+//softResetHelpers.js
+import { query } from "micro-graphql-svelte";
 
-export const useSoftResetQuery = (type, query, variables, options = {}) =>
-  useQuery(query, variables, {
+export const softResetQuery = (type, queryToUse, options = {}) =>
+  query(queryToUse, {
     ...options,
     onMutation: {
       when: new RegExp(`update${type}s?`),
       run: ({ softReset, currentResults }, resp) => {
         const updatedItems = resp[`update${type}s`]?.[`${type}s`] ?? [resp[`update${type}`][type]];
         updatedItems.forEach(updatedItem => {
-          let CachedItem = currentResults[`all${type}s`][`${type}s`].find(item => item._id == updatedItem._id);
+          let CachedItem = currentResults[`all${type}s`][`${type}s`].find(
+            item => item._id == updatedItem._id
+          );
           CachedItem && Object.assign(CachedItem, updatedItem);
         });
         softReset(currentResults);
       }
-    },
+    }
   });
 
-export const useBookSoftResetQuery = (...args) => useSoftResetQuery("Book", ...args);
-export const useSubjectSoftResetQuery = (...args) => useSoftResetQuery("Subject", ...args);
+export const bookSoftResetQuery = (...args) => softResetQuery("Book", ...args);
+export const subjectSoftResetQuery = (...args) => softResetQuery("Subject", ...args);
 ```
 
 which we can use to eliminate that boilerplate 
 
+```svelte
+<script>
+  import { getContext } from "svelte";
+  import ShowData from "./ShowData.svelte";
+  import { BOOKS_QUERY, ALL_SUBJECTS_QUERY } from "../../savedQueries";
+  import { bookSoftResetQuery, subjectSoftResetQuery } from "./softResetHelpers";
 
-```javascript
-export default props => {
-  const [page, setPage] = useState(1);
-  const { data, loading } = useBookSoftResetQuery(BOOKS_QUERY, { page });
+  let searchState = getContext("search_params");
 
-  const books = data?.allBooks?.Books ?? [];
+  let { queryState: booksState, sync: booksSync } = bookSoftResetQuery(BOOKS_QUERY);
+  let { queryState: subjectsState, sync: subjectsSync } = subjectSoftResetQuery(ALL_SUBJECTS_QUERY);
 
-  return (
-    <div>
-      <div>
-        {books.map(book => (
-          <div key={book._id}>{book.title}</div>
-        ))}
-      </div>
-      <RenderPaging page={page} setPage={setPage} />
-      {loading ? <span>Loading ...</span> : null}
-    </div>
-  );
-};
-```
+  $: booksSync($searchState);
+  $: subjectsSync({});
+</script>
 
-or similarly for our subjects component 
-
-```javascript
-export default props => {
-  const [page, setPage] = useState(1);
-  const { data, loading } = useSubjectSoftResetQuery(SUBJECTS_QUERY, { page });
-
-  const subjects = data?.allSubjects?.Subjects ?? [];
-
-  return (
-    <div>
-      <div>
-        {subjects.map(subject => (
-          <div key={subject._id}>{subject.name}</div>
-        ))}
-      </div>
-      <RenderPaging page={page} setPage={setPage} />
-      {loading ? <span>Loading ...</span> : null}
-    </div>
-  );
-};
+<ShowData booksData={$booksState} subejctsData={$subjectsState} />
 ```
 
 #### Use Case 3: Manually update all affected cache entries
