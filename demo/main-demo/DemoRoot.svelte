@@ -4,6 +4,7 @@
 
   import HardReset from "./view-data/HardReset";
   import SoftReset from "./view-data/SoftReset";
+  import CacheMutation from "./view-data/CacheMutation";
   import { writable } from "svelte/store";
 
   let inputEl;
@@ -34,5 +35,6 @@
   <hr />
 
   <!-- <HardReset /> -->
-  <SoftReset />
+  <!-- <SoftReset /> -->
+  <CacheMutation />
 </div>
