@@ -42,7 +42,7 @@
     "babel-jest": "^26.6.1",
     "babel-loader": "^8.1.0",
     "classnames": "^2.2.6",
-    "codecov": "^3.0.2",
+    "codecov": "^3.8.1",
     "css-loader": "^4.3.0",
     "del": "3.0.0",
     "express": "4.16.2",
