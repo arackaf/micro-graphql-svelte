@@ -19,7 +19,14 @@
     <script>
       docup.init({
         title: "Micro GraphQL Svelte Docs"
-      })
+      });
+      var header = document.querySelector("header");
+      var div = header.firstChild;
+      var logoImg = new Image();
+      logoImg.width = "35";
+      logoImg.style.marginRight = "5px";
+      logoImg.src = "svelte-logo.png"
+      div.insertBefore(logoImg, div.firstChild);
     </script>
   </body>
 </html>

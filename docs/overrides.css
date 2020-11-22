@@ -27,3 +27,15 @@ table code {
   background: unset;
   padding: unset;
 }
+
+
+:root {
+  --sidebar-bg: hsl(360, 100%, 98%);
+  --code-block-bgX: black;
+  --header-bg: hsl(0, 100%, 7%);
+  --code-block-bg: hsl(0, 100%, 7%);
+}
+
+header.navbar {
+  background-color: var(--header-bg);
+}
