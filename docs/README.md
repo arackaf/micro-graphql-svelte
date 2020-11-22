@@ -58,6 +58,7 @@ const client = getDefaultClient();
 | `runQuery(query: String, variables?: Object)` | Manually run this GraphQL query |
 | `runMutation(mutation: String, variables?: Object)`  | Manually run this GraphQL mutation|
 | `forceUpdate(query)`  | Manually update any components rendering that query. This is useful if you (dangerously) update a query's cache, as discussed in the caching section, below|
+| `subscribeMutation({ when, run })`  | Manually subscribe to a mutation, in order to manually update the cache. See below for more info|
 
 ## Running queries and mutations
 
@@ -555,7 +556,7 @@ which cuts the usage code to just this
 <ShowData booksData={$booksState} subejctsData={$subjectsState} />
 ```
 
-The above code assumes this component will only ever render once. If that's not the case, put these calls to `subscribeMutation` somewhere else in your code, that will only ever run one. A svelte `<script context="module">` section may be a good candidate. See [the docs](https://svelte.dev/docs#script_context_module) for more info. If you decide to try this route, be careful. Those sections will run as soon as they're parsed, which means a component's module script further down the component tree will run before components further up the tree. So if you try to set your default client in a module script in your root App component, and then set up subscriptions in module scripts in components further down the tree, you'll get a null reference exception. You'll instead want to set up your default client, and also any subscriptions in your root component (and also the root component for any code-split points).
+The above code assumes this component will only ever render once. If that's not the case, put these calls to `subscribeMutation` somewhere else, that will only ever run one. A svelte `<script context="module">` section may be a good candidate. See [the docs](https://svelte.dev/docs#script_context_module) for more info. If you decide to go this route, be careful. Those script sections will run as soon as they're parsed, which means a component's module script further down the component tree will run *before* components further up. So if you try to set your default client in a module script in your root App component, and then set up subscriptions in module scripts in components further down the tree, you'll get a null reference exception, since the default client will not have been set. You'll instead want to set up your default client, and also any subscriptions in your root component (and also the root component for any code-split points). Or you could keep your client object as a local module's export, and just use that everywhere, and pass it to `setDefaultClient` in your app's entry point.
 
 #### A note on cache management code
 
