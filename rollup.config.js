@@ -10,12 +10,12 @@ const getConfig = ({ file, minify = false, presets = [], plugins = [] }) => ({
     format: "esm",
     file
   },
-  external: ["react", "react-dom"],
+  external: [],
   plugins: [
     babel({
       babelrc: false,
       exclude: "node_modules/**",
-      presets: ["@babel/preset-react", ...presets],
+      presets: [...presets],
       plugins: ["@babel/plugin-proposal-class-properties", ...plugins]
     }),
     minify && terser({}),

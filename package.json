@@ -83,7 +83,8 @@
     "test-local": "jest --runInBand",
     "testw": "jest --runInBand --watchAll",
     "start": "node ./demo/server.js",
-    "heroku-postbuild": "webpack --config ./demo/webpack.config.js"
+    "heroku-postbuild": "webpack --config ./demo/webpack.config.js",
+    "sizeCheck": "rollup -c && gzip index.min.js && stat index.min.js.gz && rm -f index.min.js.gz"
   },
   "dependencies": {},
   "sideEffects": false,
