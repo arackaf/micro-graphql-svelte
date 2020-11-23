@@ -1,5 +1,4 @@
 [![npm version](https://img.shields.io/npm/v/micro-graphql-svelte.svg?style=flat)](https://www.npmjs.com/package/micro-graphql-svelte) 
-[![codecov](https://codecov.io/gh/arackaf/micro-graphql-svelte/branch/master/graph/badge.svg?token=S472K5LJE1)](https://codecov.io/gh/arackaf/micro-graphql-svelte)
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
 
 # micro-graphql-svelte
