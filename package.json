@@ -1,6 +1,6 @@
 {
   "name": "micro-graphql-svelte",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "",
   "main": "index.js",
   "repository": {
@@ -22,7 +22,7 @@
       "svelte"
     ],
     "coverageDirectory": "./coverage/",
-    "collectCoverage": false,
+    "collectCoverage": true,
     "collectCoverageFrom": [
       "src/**/*.js"
     ]
