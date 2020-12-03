@@ -1,5 +1,3 @@
-import React, { StatelessComponent, ComponentClass, ClassicComponentClass, Children } from "react";
-
 type MutationSubscription = {
   when: string | RegExp;
   run: (payload: MutationHandlerPayload, resp: any, variables: any) => any;
@@ -55,38 +53,6 @@ export class Client {
   forceUpdate(query: string): void;
 }
 
-type BuildQueryOptions = {
-  onMutation?: MutationSubscription | MutationSubscription[];
-  client?: Client;
-  cache?: Cache;
-  active?: boolean;
-};
-
-type BuildMutationOptions = {
-  client?: Client;
-};
-
-type IReactComponent<P = any> = StatelessComponent<P> | ComponentClass<P> | ClassicComponentClass<P>;
-
 export const compress: any;
 export const setDefaultClient: (client: Client) => void;
 export const getDefaultClient: () => Client;
-
-export function useQuery<TResults = any>(queryPacket: QueryPacket): QueryPayload<TResults>;
-
-export function useMutation<TResults = any>(mutationPacket: MutationPacket): MutationPayload<TResults>;
-
-type RenderProps<Query, Mutation> = Record<keyof Query, QueryPayload> & Record<keyof Mutation, MutationPayload>;
-
-type QueryMap = { [s: string]: QueryPacket };
-type MutationMap = { [s: string]: MutationPacket };
-
-type ComponentPacket<Query extends QueryMap, Mutation extends MutationMap> = {
-  query?: Query;
-  mutation?: Mutation;
-  children(fn: RenderProps<Query, Mutation>): React.ReactNode;
-};
-
-export function GraphQL<QueryType extends QueryMap = {}, MutationType extends MutationMap = {}>(
-  props: ComponentPacket<QueryType, MutationType>
-): JSX.Element;
