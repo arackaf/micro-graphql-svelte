@@ -71,7 +71,7 @@ type MutationOptions = {
 
 type QueryResults<T> = {
   queryState: Readable<QueryPayload<T>>;
-  sync: (variables: any, options: { active: boolean }) => void;
+  sync: (variables: any, options?: { active: boolean }) => void;
 };
 
 export function query<T = any>(query: string, options?: QueryOptions): QueryResults<T>;
