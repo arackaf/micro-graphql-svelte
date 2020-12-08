@@ -56,3 +56,6 @@ export class Client {
 export const compress: any;
 export const setDefaultClient: (client: Client) => void;
 export const getDefaultClient: () => Client;
+
+export const query: any; //TODO
+export const mutation: any; //TODO
