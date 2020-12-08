@@ -63,6 +63,7 @@ type QueryOptions = {
   onMutation?: MutationSubscription | MutationSubscription[];
   client?: Client;
   cache?: Cache;
+  initialSearch?: any;
 };
 
 type MutationOptions = {
