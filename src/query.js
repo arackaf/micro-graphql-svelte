@@ -14,9 +14,14 @@ export default function query(query, options = {}) {
 
   const client = options.client || defaultClientManager.getDefaultClient();
   queryManager = new QueryManager({ query, client, cache: options.cache, setState: queryStore.set }, options);
+  const sync = (variables, options) => queryManager.load([query, variables], options);
+
+  if (options.initialSearch) {
+    sync(options.initialSearch);
+  }
 
   return {
     queryState: derived(queryStore, $state => $state),
-    sync: (variables, options) => queryManager.load([query, variables], options)
+    sync
   };
 }

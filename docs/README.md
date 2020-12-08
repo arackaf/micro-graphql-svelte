@@ -116,6 +116,7 @@ The options argument, if supplied, can contain these properties
 | -------| ----------- |
 | `onMutation` | A map of mutations, along with handlers. This is how you update your cached results after mutations, and is explained more fully below |
 | `client`  | Manually pass in a client to be used for this query, which will override the default client|
+| `initialSearch`  | If you'd like to run a query immediately, without calling the returned sync method, provide the arguments object here.|
 
 Be sure to use the `compress` tag to remove un-needed whitespace from your query text, since it will be sent via HTTP GET—for more information, see [here](./compress). An even better option would be to use my [persisted queries helper](https://github.com/arackaf/generic-persistgraphql). This not only removes the entire query text from your network requests altogether, but also from your bundled code.
 
