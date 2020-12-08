@@ -1,3 +1,5 @@
+import { Readable } from "svelte/store";
+
 type MutationSubscription = {
   when: string | RegExp;
   run: (payload: MutationHandlerPayload, resp: any, variables: any) => any;
@@ -57,5 +59,20 @@ export const compress: any;
 export const setDefaultClient: (client: Client) => void;
 export const getDefaultClient: () => Client;
 
-export const query: any; //TODO
-export const mutation: any; //TODO
+type QueryOptions = {
+  onMutation?: MutationSubscription | MutationSubscription[];
+  client?: Client;
+  cache?: Cache;
+};
+
+type MutationOptions = {
+  client?: Client;
+};
+
+type QueryResults<T> = {
+  queryState: Readable<QueryPayload<T>>;
+  sync: (variables: any, options: { active: boolean }) => void;
+};
+
+export function query<T = any>(query: string, options?: QueryOptions): QueryResults<T>;
+export function mutation<T = any>(mutation: string, options?: MutationOptions): { mutationState: Readable<MutationPayload<T>> };
