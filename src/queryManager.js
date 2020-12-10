@@ -42,8 +42,10 @@ export default class QueryManager {
     this.load();
   };
   softReset = newResults => {
+    if (newResults) {
+      this.updateState({ data: newResults });
+    }
     this.cache.clearCache();
-    this.updateState({ data: newResults });
   };
   hardReset = () => {
     this.cache.clearCache();

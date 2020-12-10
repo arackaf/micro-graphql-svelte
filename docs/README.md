@@ -118,6 +118,8 @@ The options argument, if supplied, can contain these properties
 | `client`  | Manually pass in a client to be used for this query, which will override the default client|
 | `cache`  | Manually pass in a cache object to be used for this query, which will override the default cache|
 | `initialSearch`  | If you'd like to run a query immediately, without calling the returned sync method, provide the arguments object here.|
+| `activate`  | Optional function that will run whenever the query becomes active, in other words the query store is subscribed by at least one component, or manual call to `.subscribe`.|
+| `deactivate`  | Optional function that will run whenever the query becomes in-active, in other words the query store is not subscribed by any components, or manual calls to `.subscribe`.|
 
 Be sure to use the `compress` tag to remove un-needed whitespace from your query text, since it will be sent via HTTP GET—for more information, see [here](./compress). An even better option would be to use my [persisted queries helper](https://github.com/arackaf/generic-persistgraphql). This not only removes the entire query text from your network requests altogether, but also from your bundled code.
 

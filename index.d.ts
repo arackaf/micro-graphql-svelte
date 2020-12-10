@@ -8,7 +8,7 @@ type MutationSubscription = {
 type MutationHandlerPayload = {
   currentResults: any;
   cache: Cache;
-  softReset: (newResults: any) => void;
+  softReset: (newResults?: any) => void;
   hardReset: () => void;
   refresh: () => void;
 };
@@ -25,6 +25,7 @@ export type QueryPayload<TResults = any> = {
   reload: () => void;
   clearCache: () => void;
   clearCacheAndReload: () => void;
+  softReset: (newResults?: any) => void;
 };
 
 export type MutationPayload<TResults = any> = {
@@ -59,11 +60,13 @@ export const compress: any;
 export const setDefaultClient: (client: Client) => void;
 export const getDefaultClient: () => Client;
 
-type QueryOptions = {
+type QueryOptions<T> = {
   onMutation?: MutationSubscription | MutationSubscription[];
   client?: Client;
   cache?: Cache;
   initialSearch?: any;
+  activate?: (store: Readable<QueryPayload<T>>) => void
+  deactivate?: (store: Readable<QueryPayload<T>>) => void
 };
 
 type MutationOptions = {
@@ -75,5 +78,5 @@ type QueryResults<T> = {
   sync: (variables: any, options?: { active: boolean }) => void;
 };
 
-export function query<T = any>(query: string, options?: QueryOptions): QueryResults<T>;
+export function query<T = any>(query: string, options?: QueryOptions<T>): QueryResults<T>;
 export function mutation<T = any>(mutation: string, options?: MutationOptions): { mutationState: Readable<MutationPayload<T>> };

@@ -6,8 +6,10 @@ import QueryManager from "./queryManager";
 export default function query(query, options = {}) {
   let queryManager;
   const queryStore = writable(QueryManager.initialState, () => {
+    options.activate && options.activate(queryStore);
     queryManager.activate();
     return () => {
+      options.deactivate && options.deactivate(queryStore);
       queryManager.dispose();
     };
   });
@@ -21,7 +23,7 @@ export default function query(query, options = {}) {
   }
 
   return {
-    queryState: derived(queryStore, $state => $state),
+    queryState: derived(queryStore, $state => ({ ...$state, softReset: queryManager.softReset })),
     sync
   };
 }
