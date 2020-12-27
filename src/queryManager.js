@@ -23,6 +23,7 @@ export default class QueryManager {
     this.setState = setState;
     this.options = options;
     this.cache = cache || client.getCache(query) || client.newCacheForQuery(query);
+    this.postProcess = options.postProcess;
 
     if (typeof options.onMutation === "object") {
       if (!Array.isArray(options.onMutation)) {
@@ -99,6 +100,13 @@ export default class QueryManager {
     let graphqlQuery = this.currentUri;
     this.updateState({ loading: true });
     let promise = this.client.runUri(this.currentUri);
+
+    if (this.postProcess) {
+      promise = promise.then(resp => {
+        return Promise.resolve(this.postProcess(resp)).then(newRespMaybe => newRespMaybe || resp);
+      });
+    }
+
     this.cache.setPendingResult(graphqlQuery, promise);
     this.handleExecution(promise, graphqlQuery);
   }
