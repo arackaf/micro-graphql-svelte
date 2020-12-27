@@ -54,6 +54,7 @@ export class Client {
   setCache(query: string, cache: Cache): void;
   subscribeMutation(subscription: any, options?: any): () => void;
   forceUpdate(query: string): void;
+  preload(query: string, variables: any): void;
 }
 
 export const compress: any;
@@ -65,8 +66,9 @@ type QueryOptions<T> = {
   client?: Client;
   cache?: Cache;
   initialSearch?: any;
-  activate?: (store: Readable<QueryPayload<T>>) => void
-  deactivate?: (store: Readable<QueryPayload<T>>) => void
+  activate?: (store: Readable<QueryPayload<T>>) => void;
+  deactivate?: (store: Readable<QueryPayload<T>>) => void;
+  postProcess?: (results: any) => any;
 };
 
 type MutationOptions = {
