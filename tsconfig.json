@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "module": "esNext",
+    "noEmit": true,
+    "paths": {},
+    "target": "esnext",
+    "strict": true,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "types": []
+  },
+  "include": ["./src/index.ts"]
+}

@@ -68,6 +68,7 @@
     "svelte": "^3.29.4",
     "svelte-jester": "^1.1.5",
     "svelte-loader": "^2.13.6",
+    "typescript": "^4.1.3",
     "uglifyjs-webpack-plugin": "1.1.6",
     "url-parse": "^1.4.0",
     "webpack": "^4.44.2",
@@ -84,7 +85,8 @@
     "testw": "jest --runInBand --watchAll",
     "start": "node ./demo/server.js",
     "heroku-postbuild": "webpack --config ./demo/webpack.config.js",
-    "sizeCheck": "rollup -c && gzip index.min.js && stat index.min.js.gz && rm -f index.min.js.gz"
+    "sizeCheck": "rollup -c && gzip index.min.js && stat index.min.js.gz && rm -f index.min.js.gz",
+    "tsc": "tsc --noEmit"
   },
   "dependencies": {},
   "sideEffects": false,
