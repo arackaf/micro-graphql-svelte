@@ -1,8 +1,8 @@
 export default class Cache {
-  constructor(cacheSize = DEFAULT_CACHE_SIZE) {
+  constructor(private cacheSize = DEFAULT_CACHE_SIZE) {
     this.cacheSize = cacheSize;
   }
-  _cache = new Map([]);
+  _cache = new Map<string, Promise<Object> | Object>([]);
   get noCaching() {
     return !this.cacheSize;
   }
