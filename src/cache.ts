@@ -68,7 +68,7 @@ export default class Cache {
     } else {
       let cachedEntry = cache.get(key);
       if (cachedEntry) {
-        if (typeof cachedEntry.then === "function") {
+        if (cachedEntry instanceof Promise) {
           ifPending(cachedEntry);
         } else {
           //re-insert to put it at the fornt of the line
