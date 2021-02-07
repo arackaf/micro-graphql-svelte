@@ -93,8 +93,8 @@ export default class QueryManager {
     this.execute();
   };
   load(packet?, options?: QueryLoadOptions) {
-    let { force, active } = options ?? {};
-    
+    let { force, active } = options || {};
+
     if (typeof active !== "undefined") {
       this.active = active;
     }

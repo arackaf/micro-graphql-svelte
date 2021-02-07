@@ -8,7 +8,7 @@ type MutationOptions = {
 }
 
 export default function mutation(mutation: string, options: MutationOptions = {}) {
-  const client = options.client ?? defaultClientManager.getDefaultClient();
+  const client = options.client || defaultClientManager.getDefaultClient();
 
   if (client == null) {
     throw "Default client not configured";

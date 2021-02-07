@@ -86,7 +86,8 @@
     "start": "node ./demo/server.js",
     "heroku-postbuild": "webpack --config ./demo/webpack.config.js",
     "sizeCheck": "rollup -c && gzip index.min.js && stat index.min.js.gz && rm -f index.min.js.gz",
-    "tsc": "tsc --noEmit"
+    "tsc": "tsc --noEmit",
+    "compile-ts": "tsc"
   },
   "dependencies": {},
   "sideEffects": false,
