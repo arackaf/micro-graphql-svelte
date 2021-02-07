@@ -1,7 +1,8 @@
 import Cache, { DEFAULT_CACHE_SIZE } from "./cache";
 
 type ClientOptions = {
-  cacheSize: number;
+  endpoint: string;
+  cacheSize?: number;
   noCaching?: boolean;
 };
 
@@ -35,14 +36,14 @@ export type SubscriptionItem = {
 };
 
 export default class Client {
-  caches: Map<string, Cache>;
-  mutationListeners: Set<{ subscription: SubscriptionItem[]; options?: OnMutationQuerySetup }>;
-  forceListeners: Map<string, any>;
-  cacheSize?: number;
-  fetchOptions: RequestInit;
+  private caches = new Map<string, Cache>();
+  private mutationListeners = new Set<{ subscription: SubscriptionItem[]; options?: OnMutationQuerySetup }>();
+  private forceListeners = new Map<string, any>();
+  private cacheSize?: number;
+  private fetchOptions: RequestInit;
   endpoint: string;
 
-  constructor(props: ClientOptions = { cacheSize: DEFAULT_CACHE_SIZE }) {
+  constructor(props: ClientOptions) {
     if (props.noCaching != null && props.cacheSize != null) {
       throw "Both noCaching, and cacheSize are specified. At most one of these options can be included";
     }
@@ -51,10 +52,7 @@ export default class Client {
       props.cacheSize = 0;
     }
 
-    Object.assign(this, props);
-    this.caches = new Map([]);
-    this.mutationListeners = new Set([]);
-    this.forceListeners = new Map([]);
+    Object.assign(this, { cacheSize: DEFAULT_CACHE_SIZE }, props);
   }
   get cacheSizeToUse() {
     if (this.cacheSize != null) {
@@ -114,7 +112,16 @@ export default class Client {
       typeof variables === "object" ? `&variables=${encodeURIComponent(JSON.stringify(variables))}` : ""
     }`;
   }
-  subscribeMutation(subscription: SubscriptionItem | SubscriptionItem[], options?: OnMutationQuerySetup) {
+  subscribeMutation(subscription: SubscriptionItem | SubscriptionItem[]) {
+    if (!Array.isArray(subscription)) {
+      subscription = [subscription];
+    }
+    const packet = { subscription };
+    this.mutationListeners.add(packet);
+
+    return () => this.mutationListeners.delete(packet);
+  }
+  subscribeQuery(subscription: SubscriptionItem | SubscriptionItem[], options: OnMutationQuerySetup) {
     if (!Array.isArray(subscription)) {
       subscription = [subscription];
     }
@@ -173,7 +180,7 @@ export default class Client {
               singleSubscription.run(args, resp, variables);
             }
           } else if (singleSubscription.when instanceof RegExp) {
-            if ([...mutationKeysLookup].some(k => singleSubscription.when.test(k))) {
+            if ([...mutationKeysLookup].some(k => (singleSubscription.when as RegExp).test(k))) {
               singleSubscription.run(args, resp, variables);
             }
           }

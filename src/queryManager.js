@@ -132,7 +132,7 @@ export default class QueryManager {
   };
   activate() {
     if (typeof this.options.onMutation === "object") {
-      this.mutationSubscription = this.client.subscribeMutation(this.options.onMutation, {
+      this.mutationSubscription = this.client.subscribeQuery(this.options.onMutation, {
         cache: this.cache,
         softReset: this.softReset,
         hardReset: this.hardReset,
