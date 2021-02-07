@@ -1,4 +1,10 @@
+import Client from "./client";
+
 export default class MutationManager {
+  client: Client;
+  mutation: string;
+  setState: (newState) => void;
+  
   runMutation = variables => {
     this.setState({
       running: true,

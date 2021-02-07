@@ -1,9 +1,13 @@
-import { writable, readable, derived } from "svelte/store";
+import { writable, derived } from "svelte/store";
 
-import { defaultClientManager } from "./client";
+import Client, { defaultClientManager } from "./client";
 import MutationManager from "./mutationManager";
 
-export default function mutation(mutation, options = {}) {
+type MutationOptions = {
+  client?: Client;
+}
+
+export default function mutation(mutation: string, options: MutationOptions = {}) {
   const client = options.client || defaultClientManager.getDefaultClient();
   const mutationManager = new MutationManager({ client }, mutation);
 

@@ -19,6 +19,11 @@ type QueryState = {
   clearCacheAndReload: () => void;
 }
 
+export type QueryLoadOptions = {
+  force?: boolean;
+  active?: boolean;
+}
+
 export default class QueryManager {
   query: string;
   client: Client;
@@ -87,7 +92,9 @@ export default class QueryManager {
   reload = () => {
     this.execute();
   };
-  load(packet?, { force, active } = {} as any) {
+  load(packet?, options?: QueryLoadOptions) {
+    let { force, active } = options ?? {};
+    
     if (typeof active !== "undefined") {
       this.active = active;
     }

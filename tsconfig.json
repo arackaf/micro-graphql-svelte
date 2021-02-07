@@ -8,7 +8,8 @@
     "strict": true,
     "noImplicitAny": false,
     "strictNullChecks": false,
-    "types": []
+    "types": ["svelte"],
+    "moduleResolution": "node"
   },
   "include": ["./src/index.ts"]
 }
