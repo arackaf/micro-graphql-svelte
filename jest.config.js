@@ -1,5 +1,6 @@
 const fs = require("fs");
-const tsConfig = JSON.parse(fs.readFileSync("./tsconfig.json", { encoding: "utf8" })).compilerOptions;
+const tsConfig = require("./tsconfig.json").compilerOptions;
+
 tsConfig.module = "commonjs";
 tsConfig.target = "es2015";
 tsConfig.types.push("jest");
