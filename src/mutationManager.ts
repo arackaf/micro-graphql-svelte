@@ -49,10 +49,7 @@ export default class MutationManager {
     this.client = client;
     this.mutation = mutation;
 
-    this.mutationStore = writable(this.currentState, () => () => {
-      this.setState = () => {};
-    });
-  
+    this.mutationStore = writable(this.currentState);
     this.setState = this.mutationStore.set;
   }
 }

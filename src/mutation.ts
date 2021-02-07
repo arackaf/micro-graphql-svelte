@@ -1,4 +1,4 @@
-import { writable, derived } from "svelte/store";
+import { derived } from "svelte/store";
 
 import Client, { defaultClientManager } from "./client";
 import MutationManager from "./mutationManager";
