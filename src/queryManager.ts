@@ -1,3 +1,6 @@
+import Client from "./client";
+import Cache from "./cache";
+
 const deConstructQueryPacket = packet => {
   if (typeof packet === "string") {
     return [packet, null, {}];
@@ -6,8 +9,30 @@ const deConstructQueryPacket = packet => {
   }
 };
 
+type QueryState = {
+  loading: boolean;
+  loaded: boolean;
+  data: unknown;
+  error: unknown;
+  reload: () => void;
+  clearCache: () => void;
+  clearCacheAndReload: () => void;
+}
+
 export default class QueryManager {
+  query: string;
+  client: Client;
   active = true;
+  setState: (newState: Object) => void;
+  options: any;
+  cache: Cache;
+  postProcess: (resp: unknown) => unknown;
+  currentUri: string;
+
+  unregisterQuery: () => void;
+
+  currentPromise: Promise<unknown>;
+
   mutationSubscription = null;
   static initialState = {
     loading: false,
@@ -15,7 +40,7 @@ export default class QueryManager {
     data: null,
     error: null
   };
-  currentState = { ...QueryManager.initialState };
+  currentState: QueryState;
 
   constructor({ query, client, setState, cache }, options) {
     this.query = query;
@@ -30,9 +55,12 @@ export default class QueryManager {
         options.onMutation = [options.onMutation];
       }
     }
-    this.currentState.reload = this.reload;
-    this.currentState.clearCache = () => this.cache.clearCache();
-    this.currentState.clearCacheAndReload = this.clearCacheAndReload;
+    this.currentState = {
+      ...QueryManager.initialState,
+      reload: this.reload,
+      clearCache: () => this.cache.clearCache(),
+      clearCacheAndReload: this.clearCacheAndReload,
+    };
   }
   isActive = () => this.active;
   updateState = newState => {
@@ -59,7 +87,7 @@ export default class QueryManager {
   reload = () => {
     this.execute();
   };
-  load(packet, { force, active } = {}) {
+  load(packet?, { force, active } = {} as any) {
     if (typeof active !== "undefined") {
       this.active = active;
     }

@@ -1,4 +1,4 @@
-export default function compress(strings, ...expressions) {
+export default function compress(strings: TemplateStringsArray, ...expressions: string[]): string {
   return strings
     .map((string, i) => {
       const expression = i < expressions.length ? expressions[i] : "";
