@@ -8,14 +8,13 @@ type MutationOptions = {
 }
 
 export default function mutation(mutation: string, options: MutationOptions = {}) {
-  const client = options.client || defaultClientManager.getDefaultClient();
+  const client = options.client ?? defaultClientManager.getDefaultClient();
+
+  if (client == null) {
+    throw "Default client not configured";
+  }
+
   const mutationManager = new MutationManager({ client }, mutation);
 
-  const mutationStore = writable(mutationManager.currentState, () => () => {
-    mutationManager.setState = () => {};
-  });
-
-  mutationManager.setState = mutationStore.set;
-
-  return { mutationState: derived(mutationStore, $state => $state) };
+  return { mutationState: derived(mutationManager.mutationStore, $state => $state) };
 }

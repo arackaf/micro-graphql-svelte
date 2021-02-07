@@ -1,11 +1,23 @@
+import { Writable, writable } from "svelte/store";
 import Client from "./client";
+
+type MutationState = {
+  running: boolean;
+  finished: boolean;
+  runMutation: (variables: unknown) => Promise<unknown>;
+}
+
+type MutationOptions = {
+  client: Client;
+}
 
 export default class MutationManager {
   client: Client;
   mutation: string;
-  setState: (newState) => void;
+  setState: (newState: MutationState) => void;
+  mutationStore: Writable<MutationState>;
   
-  runMutation = variables => {
+  runMutation = (variables: unknown) => {
     this.setState({
       running: true,
       finished: false,
@@ -33,8 +45,14 @@ export default class MutationManager {
     Object.assign(this.currentState, newState);
     this.setState(this.currentState);
   };
-  constructor({ client }, mutation) {
+  constructor({ client }: MutationOptions, mutation: string) {
     this.client = client;
     this.mutation = mutation;
+
+    this.mutationStore = writable(this.currentState, () => () => {
+      this.setState = () => {};
+    });
+  
+    this.setState = this.mutationStore.set;
   }
 }
