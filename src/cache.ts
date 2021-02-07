@@ -40,7 +40,7 @@ export default class Cache {
     }
   }
 
-  setResults(promise, cacheKey, resp, err) {
+  setResults(promise, cacheKey, resp, err = null) {
     let cache = this._cache;
     if (this.noCaching) {
       return;

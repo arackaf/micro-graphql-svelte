@@ -1,7 +1,48 @@
 import Cache, { DEFAULT_CACHE_SIZE } from "./cache";
 
+type ClientOptions = {
+  cacheSize: number;
+  noCaching?: boolean;
+};
+
+type OnMutationQuerySetup = {
+  cache: Cache;
+  softReset: (newResults: Object) => void;
+  hardReset: () => void;
+  refresh: () => void;
+  currentResults: () => unknown;
+  isActive: () => boolean;
+};
+
+type MinimalOnMutationPayload = {
+  refreshActiveQueries: (query: string) => void;
+};
+
+export type FullMutationQueryPayload = {
+  cache: Cache;
+  softReset: (newResults: Object) => void;
+  hardReset: () => void;
+  refresh: () => void;
+  currentResults: unknown;
+  isActive: () => boolean;
+  refreshActiveQueries: (query: string) => void;
+};
+export type SubscriptionTrigger = string | RegExp;
+
+export type SubscriptionItem = {
+  when: SubscriptionTrigger;
+  run: (onChangeOptions: MinimalOnMutationPayload | FullMutationQueryPayload, resp: Object, variables: Object) => void;
+};
+
 export default class Client {
-  constructor(props = { cacheSize: DEFAULT_CACHE_SIZE }) {
+  caches: Map<string, Cache>;
+  mutationListeners: Set<{ subscription: SubscriptionItem[]; options?: OnMutationQuerySetup }>;
+  forceListeners: Map<string, any>;
+  cacheSize?: number;
+  fetchOptions: RequestInit;
+  endpoint: string;
+
+  constructor(props: ClientOptions = { cacheSize: DEFAULT_CACHE_SIZE }) {
     if (props.noCaching != null && props.cacheSize != null) {
       throw "Both noCaching, and cacheSize are specified. At most one of these options can be included";
     }
@@ -53,7 +94,7 @@ export default class Client {
       }
     );
     return promiseResult;
-  }  
+  }
   newCacheForQuery(query) {
     let newCache = new Cache(this.cacheSizeToUse);
     this.setCache(query, newCache);
@@ -73,14 +114,12 @@ export default class Client {
       typeof variables === "object" ? `&variables=${encodeURIComponent(JSON.stringify(variables))}` : ""
     }`;
   }
-  subscribeMutation(subscription, options = {}) {
+  subscribeMutation(subscription: SubscriptionItem | SubscriptionItem[], options?: OnMutationQuerySetup) {
     if (!Array.isArray(subscription)) {
       subscription = [subscription];
     }
     const packet = { subscription, options };
-    if (!options.currentResults) {
-      options.currentResults = () => ({});
-    }
+
     this.mutationListeners.add(packet);
 
     return () => this.mutationListeners.delete(packet);
@@ -106,21 +145,36 @@ export default class Client {
     return Promise.resolve(this.runMutation(mutation, variables)).then(resp => {
       let mutationKeys = Object.keys(resp);
       let mutationKeysLookup = new Set(mutationKeys);
-      [...this.mutationListeners].forEach(({ subscription, options: { currentResults, isActive, ...rest } }) => {
+      [...this.mutationListeners].forEach(({ subscription, options }) => {
         subscription.forEach(singleSubscription => {
-          if (typeof isActive === "function") {
-            if (!isActive()) {
+          if (options && typeof options.isActive === "function") {
+            if (!options.isActive()) {
               return;
             }
           }
-          
+
+          let args: MinimalOnMutationPayload | FullMutationQueryPayload;
+
+          if (options) {
+            args = {
+              ...options,
+              currentResults: options.currentResults(),
+              refreshActiveQueries
+            };
+          } else {
+            args = {
+              refreshActiveQueries
+            };
+          }
+
           if (typeof singleSubscription.when === "string") {
             if (mutationKeysLookup.has(singleSubscription.when)) {
-              singleSubscription.run({ currentResults: currentResults(), refreshActiveQueries, ...rest }, resp, variables);
+              //if (options)
+              singleSubscription.run(args, resp, variables);
             }
-          } else if (typeof singleSubscription.when === "object" && singleSubscription.when.test) {
+          } else if (singleSubscription.when instanceof RegExp) {
             if ([...mutationKeysLookup].some(k => singleSubscription.when.test(k))) {
-              singleSubscription.run({ currentResults: currentResults(), refreshActiveQueries, ...rest }, resp, variables);
+              singleSubscription.run(args, resp, variables);
             }
           }
         });
