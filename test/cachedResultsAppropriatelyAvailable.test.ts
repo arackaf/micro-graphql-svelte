@@ -1,4 +1,4 @@
-import { setDefaultClient, query } from "../src/index";
+import { setDefaultClient, query, Client } from "../src/index";
 import ClientMock from "./clientMock";
 import { pause } from "./testUtil";
 
@@ -6,8 +6,8 @@ const LOAD_TASKS = "A";
 const LOAD_USERS = "B";
 const UPDATE_USER = "M";
 
-let client1;
-let ComponentToUse;
+let client1: any;
+let ComponentToUse: any;
 let renders = 0;
 
 beforeEach(() => {

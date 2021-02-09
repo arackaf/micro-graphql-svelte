@@ -216,7 +216,7 @@ export default class Client {
 }
 
 class DefaultClientManager {
-  defaultClient?: Client | null = null;
+  defaultClient: Client | null = null;
   setDefaultClient = (client: Client) => (this.defaultClient = client);
   getDefaultClient = () => this.defaultClient;
 }

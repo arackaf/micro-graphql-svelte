@@ -1,15 +1,18 @@
-import Client from "./client";
-import Cache from "./cache";
+import { Writable } from "svelte/store";
+import Client, { SubscriptionItem } from "./client";
+import Cache, { GraphQLResponse } from "./cache";
 
-const deConstructQueryPacket = packet => {
-  if (typeof packet === "string") {
-    return [packet, null, {}];
-  } else if (Array.isArray(packet)) {
-    return [packet[0], packet[1] || null, packet[2] || {}];
-  }
-};
+export type QueryOptions = {
+  client: Client;
+  cache?: Cache;
+  initialSearch?: string;
+  activate?: (store: Writable<any>) => void;
+  deactivate?: (store: Writable<any>) => void;
+  postProcess: (resp: unknown) => unknown;
+  onMutation: SubscriptionItem | SubscriptionItem[]
+}
 
-type QueryState = {
+export type QueryState = {
   loading: boolean;
   loaded: boolean;
   data: unknown;
@@ -17,11 +20,19 @@ type QueryState = {
   reload: () => void;
   clearCache: () => void;
   clearCacheAndReload: () => void;
+  currentQuery: string;
 }
 
 export type QueryLoadOptions = {
   force?: boolean;
   active?: boolean;
+}
+
+type QueryManagerOptions = {
+  query: string;
+  client: Client;
+  setState: (newState: Partial<QueryState>) => void;
+  cache?: Cache;
 }
 
 export default class QueryManager {
@@ -31,31 +42,32 @@ export default class QueryManager {
   setState: (newState: Object) => void;
   options: any;
   cache: Cache;
-  postProcess: (resp: unknown) => unknown;
-  currentUri: string;
+  postProcess?: (resp: unknown) => unknown;
+  currentUri = "";
 
-  unregisterQuery: () => void;
+  unregisterQuery?: () => void;
 
-  currentPromise: Promise<unknown>;
+  currentPromise?: Promise<unknown>;
 
-  mutationSubscription = null;
+  mutationSubscription?: () => void;
   static initialState = {
     loading: false,
     loaded: false,
     data: null,
-    error: null
+    error: null,
+    currentQuery: ""
   };
   currentState: QueryState;
 
-  constructor({ query, client, setState, cache }, options) {
+  constructor({ query, client, setState, cache }: QueryManagerOptions, options: Partial<QueryOptions>) {
     this.query = query;
     this.client = client;
     this.setState = setState;
     this.options = options;
     this.cache = cache || client.getCache(query) || client.newCacheForQuery(query);
-    this.postProcess = options.postProcess;
+    this.postProcess = options?.postProcess;
 
-    if (typeof options.onMutation === "object") {
+    if (typeof options?.onMutation === "object") {
       if (!Array.isArray(options.onMutation)) {
         options.onMutation = [options.onMutation];
       }
@@ -68,14 +80,14 @@ export default class QueryManager {
     };
   }
   isActive = () => this.active;
-  updateState = newState => {
+  updateState = (newState: Partial<QueryState>) => {
     Object.assign(this.currentState, newState);
     this.setState(Object.assign({}, this.currentState));
   };
   refresh = () => {
     this.load();
   };
-  softReset = newResults => {
+  softReset = (newResults: unknown) => {
     if (newResults) {
       this.updateState({ data: newResults });
     }
@@ -92,7 +104,7 @@ export default class QueryManager {
   reload = () => {
     this.execute();
   };
-  load(packet?, options?: QueryLoadOptions) {
+  load(packet?: [string, unknown], options?: QueryLoadOptions) {
     let { force, active } = options || {};
 
     if (typeof active !== "undefined") {
@@ -103,7 +115,7 @@ export default class QueryManager {
     }
 
     if (packet) {
-      const [query, variables] = deConstructQueryPacket(packet);
+      const [query, variables] = packet;
       let graphqlQuery = this.client.getGraphqlQuery({ query, variables });
       if (force || graphqlQuery != this.currentUri) {
         this.currentUri = graphqlQuery;
@@ -114,7 +126,7 @@ export default class QueryManager {
 
     let graphqlQuery = this.currentUri;
     this.cache.getFromCache(
-      graphqlQuery,
+      graphqlQuery!,
       promise => {
         Promise.resolve(promise)
           .then(() => {
@@ -136,16 +148,16 @@ export default class QueryManager {
     this.updateState({ loading: true });
     let promise = this.client.runUri(this.currentUri);
 
-    if (this.postProcess) {
+    if (this.postProcess != null) {
       promise = promise.then(resp => {
-        return Promise.resolve(this.postProcess(resp)).then(newRespMaybe => newRespMaybe || resp);
+        return Promise.resolve(this.postProcess!(resp)).then(newRespMaybe => newRespMaybe || resp);
       });
     }
 
     this.cache.setPendingResult(graphqlQuery, promise);
     this.handleExecution(promise, graphqlQuery);
   }
-  handleExecution = (promise, cacheKey) => {
+  handleExecution = (promise: Promise<GraphQLResponse>, cacheKey: string) => {
     this.currentPromise = promise;
     Promise.resolve(promise)
       .then(resp => {
@@ -161,7 +173,7 @@ export default class QueryManager {
         }
       })
       .catch(err => {
-        this.cache.setResults(promise, cacheKey, null, err);
+        this.cache.setResults(promise, cacheKey, void 0, err);
         this.updateState({ loaded: true, loading: false, data: null, error: err, currentQuery: cacheKey });
       });
   };

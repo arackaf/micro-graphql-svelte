@@ -1,20 +1,12 @@
 import { writable, derived, Writable } from "svelte/store";
 import Client, { defaultClientManager } from "./client";
-import Cache from "./cache";
 
-import QueryManager, { QueryLoadOptions } from "./queryManager";
+import QueryManager, { QueryLoadOptions, QueryOptions, QueryState } from "./queryManager";
 
-type QueryOptions = {
-  client?: Client;
-  cache?: Cache;
-  initialSearch?: string;
-  activate?: (store: Writable<any>) => void;
-  deactivate?: (store: Writable<any>) => void;
-}
 
-export default function query(query, options: QueryOptions = {}) {
-  let queryManager;
-  const queryStore = writable(QueryManager.initialState, () => {
+export default function query(query: string, options: Partial<QueryOptions> = {}) {
+  let queryManager: QueryManager;
+  const queryStore = writable<Partial<QueryState>>(QueryManager.initialState, () => {
     options.activate && options.activate(queryStore);
     queryManager.activate();
     return () => {
@@ -23,9 +15,13 @@ export default function query(query, options: QueryOptions = {}) {
     };
   });
 
-  const client = options.client || defaultClientManager.getDefaultClient();
-  queryManager = new QueryManager({ query, client, cache: options.cache, setState: queryStore.set }, options);
-  const sync = (variables, options?: QueryLoadOptions) => queryManager.load([query, variables], options);
+  const client: Client | null = options.client || defaultClientManager.getDefaultClient();
+  if (client == null) {
+    throw "Default Client not configured";
+  }
+  
+  queryManager = new QueryManager({ query, client, cache: options?.cache, setState: queryStore.set }, options);
+  const sync = (variables: unknown, options?: QueryLoadOptions) => queryManager.load([query, variables], options);
 
   if (options.initialSearch) {
     sync(options.initialSearch);

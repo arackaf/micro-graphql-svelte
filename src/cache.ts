@@ -1,4 +1,4 @@
-type GraphQLResponse = {
+export type GraphQLResponse = {
   errors?: unknown;
   data?: unknown;
 };
@@ -50,7 +50,7 @@ export default class Cache {
     }
   }
 
-  setResults(promise: Promise<unknown>, cacheKey: string, resp: GraphQLResponse, err: unknown = null) {
+  setResults(promise: Promise<unknown>, cacheKey: string, resp?: GraphQLResponse, err: unknown = null) {
     let cache = this._cache;
     if (this.noCaching) {
       return;
@@ -60,9 +60,9 @@ export default class Cache {
     //we'll still use the results locally
     if (cache.get(cacheKey) !== promise) return;
 
-    if (err) {
+    if (err != null) {
       cache.set(cacheKey, { data: null, error: err });
-    } else {
+    } else if (resp != null) {
       if (resp.errors) {
         cache.set(cacheKey, { data: null, error: resp.errors });
       } else {
@@ -71,13 +71,13 @@ export default class Cache {
     }
   }
 
-  getFromCache(key: string, ifPending: (entry: unknown) => void, ifResults: (entry: unknown) => void, ifNotFound: () => void) {
+  getFromCache(key: string, ifPending: (p: Promise<unknown>) => void, ifResults: (entry: CachedEntry) => void, ifNotFound: () => void) {
     let cache = this._cache;
     if (this.noCaching) {
       ifNotFound();
     } else {
       let cachedEntry = cache.get(key);
-      if (cachedEntry) {
+      if (cachedEntry != null) {
         if (cachedEntry instanceof Promise) {
           ifPending(cachedEntry);
         } else {
