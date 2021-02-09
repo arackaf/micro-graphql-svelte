@@ -1,8 +1,18 @@
+type GraphQLResponse = {
+  errors?: unknown;
+  data?: unknown;
+};
+
+type CachedEntry = {
+  error?: unknown;
+  data?: unknown;
+};
+
 export default class Cache {
   constructor(private cacheSize = DEFAULT_CACHE_SIZE) {
     this.cacheSize = cacheSize;
   }
-  _cache = new Map<string, Promise<Object> | Object>([]);
+  _cache = new Map<string, Promise<GraphQLResponse> | CachedEntry>([]);
   get noCaching() {
     return !this.cacheSize;
   }
@@ -15,11 +25,11 @@ export default class Cache {
     return [...this._cache];
   }
 
-  get(key) {
+  get(key: string) {
     return this._cache.get(key);
   }
 
-  set(key, results) {
+  set(key: string, results: CachedEntry) {
     this._cache.set(key, results);
   }
 
@@ -27,7 +37,7 @@ export default class Cache {
     this._cache.clear();
   }
 
-  setPendingResult(graphqlQuery, promise) {
+  setPendingResult(graphqlQuery: string, promise: Promise<GraphQLResponse>) {
     let cache = this._cache;
     //front of the line now, to support LRU ejection
     if (!this.noCaching) {
@@ -40,7 +50,7 @@ export default class Cache {
     }
   }
 
-  setResults(promise, cacheKey, resp, err = null) {
+  setResults(promise: Promise<unknown>, cacheKey: string, resp: GraphQLResponse, err: unknown = null) {
     let cache = this._cache;
     if (this.noCaching) {
       return;
@@ -61,7 +71,7 @@ export default class Cache {
     }
   }
 
-  getFromCache(key, ifPending, ifResults, ifNotFound) {
+  getFromCache(key: string, ifPending: (entry: unknown) => void, ifResults: (entry: unknown) => void, ifNotFound: () => void) {
     let cache = this._cache;
     if (this.noCaching) {
       ifNotFound();
