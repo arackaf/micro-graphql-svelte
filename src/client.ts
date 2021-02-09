@@ -1,5 +1,10 @@
 import Cache, { DEFAULT_CACHE_SIZE } from "./cache";
 
+type QueryPacket = {
+  query: string;
+  variables: unknown;
+}
+
 type ClientOptions = {
   endpoint: string;
   cacheSize?: number;
@@ -32,15 +37,15 @@ export type SubscriptionTrigger = string | RegExp;
 
 export type SubscriptionItem = {
   when: SubscriptionTrigger;
-  run: (onChangeOptions: MinimalOnMutationPayload | FullMutationQueryPayload, resp: Object, variables: Object) => void;
+  run: (onChangeOptions: MinimalOnMutationPayload | FullMutationQueryPayload, resp: Object, variables: unknown) => void;
 };
 
 export default class Client {
   private caches = new Map<string, Cache>();
   private mutationListeners = new Set<{ subscription: SubscriptionItem[]; options?: OnMutationQuerySetup }>();
-  private forceListeners = new Map<string, any>();
+  private forceListeners = new Map<string, Set<() => void>>();
   private cacheSize?: number;
-  private fetchOptions: RequestInit;
+  private fetchOptions?: RequestInit;
   endpoint: string;
 
   constructor(props: ClientOptions) {
@@ -52,6 +57,7 @@ export default class Client {
       props.cacheSize = 0;
     }
 
+    this.endpoint = props.endpoint;
     Object.assign(this, { cacheSize: DEFAULT_CACHE_SIZE }, props);
   }
   get cacheSizeToUse() {
@@ -60,12 +66,12 @@ export default class Client {
     }
     return DEFAULT_CACHE_SIZE;
   }
-  getCache(query) {
+  getCache(query: string) {
     return this.caches.get(query);
   }
-  preload(query, variables) {
+  preload(query: string, variables: unknown) {
     let cache = this.getCache(query);
-    if (!cache) {
+    if (cache == null) {
       cache = this.newCacheForQuery(query);
     }
 
@@ -84,30 +90,30 @@ export default class Client {
       },
       () => {
         let promise = this.runUri(graphqlQuery);
-        cache.setPendingResult(graphqlQuery, promise);
+        cache!.setPendingResult(graphqlQuery, promise);
         promiseResult = promise;
         promise.then(resp => {
-          cache.setResults(promise, graphqlQuery, resp);
+          cache!.setResults(promise, graphqlQuery, resp);
         });
       }
     );
     return promiseResult;
   }
-  newCacheForQuery(query) {
+  newCacheForQuery(query: string) {
     let newCache = new Cache(this.cacheSizeToUse);
     this.setCache(query, newCache);
     return newCache;
   }
-  setCache(query, cache) {
+  setCache(query: string, cache: Cache) {
     this.caches.set(query, cache);
   }
-  runQuery(query, variables) {
+  runQuery(query: string, variables: unknown) {
     return this.runUri(this.getGraphqlQuery({ query, variables }));
   }
-  runUri(uri) {
+  runUri(uri: string) {
     return fetch(uri, this.fetchOptions || void 0).then(resp => resp.json());
   }
-  getGraphqlQuery({ query, variables }) {
+  getGraphqlQuery({ query, variables }: QueryPacket) {
     return `${this.endpoint}?query=${encodeURIComponent(query)}${
       typeof variables === "object" ? `&variables=${encodeURIComponent(JSON.stringify(variables))}` : ""
     }`;
@@ -131,7 +137,7 @@ export default class Client {
 
     return () => this.mutationListeners.delete(packet);
   }
-  forceUpdate(query) {
+  forceUpdate(query: string) {
     let updateListeners = this.forceListeners.get(query);
     if (updateListeners) {
       for (let refresh of updateListeners) {
@@ -139,16 +145,16 @@ export default class Client {
       }
     }
   }
-  registerQuery(query, refresh) {
+  registerQuery(query: string, refresh: () => void) {
     if (!this.forceListeners.has(query)) {
       this.forceListeners.set(query, new Set([]));
     }
-    this.forceListeners.get(query).add(refresh);
+    this.forceListeners.get(query)!.add(refresh);
 
-    return () => this.forceListeners.get(query).delete(refresh);
+    return () => this.forceListeners.get(query)!.delete(refresh);
   }
-  processMutation(mutation, variables) {
-    const refreshActiveQueries = query => this.forceUpdate(query);
+  processMutation(mutation: string, variables: unknown) {
+    const refreshActiveQueries = (query: string) => this.forceUpdate(query);
     return Promise.resolve(this.runMutation(mutation, variables)).then(resp => {
       let mutationKeys = Object.keys(resp);
       let mutationKeysLookup = new Set(mutationKeys);
@@ -189,7 +195,7 @@ export default class Client {
       return resp;
     });
   }
-  runMutation(mutation, variables) {
+  runMutation(mutation: string, variables: unknown) {
     let { headers = {}, ...otherOptions } = this.fetchOptions || {};
     return fetch(this.endpoint, {
       method: "post",
