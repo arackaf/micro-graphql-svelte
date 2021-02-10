@@ -5,19 +5,19 @@ import ClientMock from "./clientMock";
 import { dataPacket, deferred, pause, resolveDeferred } from "./testUtil";
 
 import { render, fireEvent } from "@testing-library/svelte";
-import Comp1 from "./unmountTestComponents/component1";
-import Comp2 from "./unmountTestComponents/component2";
-import Comp3 from "./unmountTestComponents/component3";
+import Comp1 from "./unmountTestComponents/component1.svelte";
+import Comp2 from "./unmountTestComponents/component2.svelte";
+import Comp3 from "./unmountTestComponents/component3.svelte";
 
 test("Mutation listener destroys at unmount", async () => {
-  let client1 = new ClientMock("endpoint1");
+  let client1: any = new ClientMock("endpoint1");
   setDefaultClient(client1);
 
   const { unmount, container } = render(Comp1, {});
 
   client1.nextMutationResult = { updateBook: { Book: { title: "New Title" } } };
   const { mutationState } = mutation("someMutation{}");
-  await get(mutationState).runMutation();
+  await get(mutationState).runMutation(null);
 
   await unmount();
 
@@ -27,7 +27,7 @@ test("Mutation listener destroys at unmount", async () => {
 });
 
 test("Refresh reference removes at unmount", async () => {
-  let client1 = new ClientMock("endpoint1");
+  let client1: any = new ClientMock("endpoint1");
   setDefaultClient(client1);
 
   let runCount = 0;

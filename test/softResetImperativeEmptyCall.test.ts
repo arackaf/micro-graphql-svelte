@@ -25,7 +25,7 @@ test("Default cache size of 10", async () => {
   expect(get(queryState).data).toEqual({ a: 1 });
   expect(client1.queriesRun).toBe(3);
   
-  get(queryState).softReset();
+  get(queryState).softReset(null);
   expect(get(queryState).data).toEqual({ a: 1 });
 
   sync({ page: 2 });

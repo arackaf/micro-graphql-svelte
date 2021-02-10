@@ -39,7 +39,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
     sync({ page: 1 });
 
     client.nextMutationResult = { updateBook: { Book: { title: "New Title" } } };
-    await get(mutationState).runMutation();
+    await get(mutationState).runMutation(null);
 
     expect(runCount).toBe(1);
   });
@@ -59,7 +59,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
     sub = queryState.subscribe(() => {});
 
     client.nextMutationResult = { updateBook: { Book: { title: "New Name" } } };
-    await get(mutationState).runMutation();
+    await get(mutationState).runMutation(null);
 
     expect(runCount).toBe(1);
     expect(runCount2).toBe(1);
@@ -73,7 +73,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
     sub = queryState.subscribe(() => {});
 
     client.nextMutationResult = { updateBook: { Book: { title: "New Title" } } };
-    await get(mutationState).runMutation();
+    await get(mutationState).runMutation(null);
 
     expect(runCount).toBe(1);
   });
@@ -93,7 +93,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
     sub = queryState.subscribe(() => {});
 
     client.nextMutationResult = { updateBook: { Book: { title: "New Name" } } };
-    await get(mutationState).runMutation();
+    await get(mutationState).runMutation(null);
 
     expect(runCount).toBe(1);
     expect(runCount2).toBe(1);
@@ -114,7 +114,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
     sub = queryState.subscribe(() => {});
 
     client.nextMutationResult = { updateBook: { Book: { title: "New Name" } } };
-    await get(mutationState).runMutation();
+    await get(mutationState).runMutation(null);
 
     expect(runCount).toBe(1);
     expect(runCount2).toBe(1);
@@ -128,7 +128,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
     sub = queryState.subscribe(() => {});
 
     client.nextMutationResult = { updateAuthor: { Author: { name: "New Name" } } };
-    await get(mutationState).runMutation();
+    await get(mutationState).runMutation(null);
 
     expect(runCount).toBe(0);
   });

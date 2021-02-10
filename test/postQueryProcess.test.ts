@@ -24,7 +24,7 @@ test("Side effect post-process", async () => {
   let resultAfter = (client1.nextResult = deferred());
 
   ({ queryState, sync } = query("A", {
-    postProcess: resp => {
+    postProcess: (resp: any) => {
       resp.data.tasks[0].id = 2;
     }
   }));

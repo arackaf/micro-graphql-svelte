@@ -81,7 +81,7 @@ test("Clear cache and reload", async () => {
 });
 
 test("Pick up in-progress query", async () => {
-  let p = (client1.nextResult = deferred());
+  let p: any = (client1.nextResult = deferred());
 
   const { queryState: store1, sync: sync1 } = query(basicQuery);
   sync1({ page: 1 });

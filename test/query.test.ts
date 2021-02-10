@@ -144,7 +144,7 @@ test("Reload query - see new data", async () => {
   expect(get(queryState)).toMatchObject(dataPacket({ tasks: [{ id: 1 }] }));
 
   let resultAfter = (client1.nextResult = deferred());
-  get(queryState).reload();
+  get<any>(queryState).reload();
   await resolveDeferred(resultAfter, { data: { tasks: [{ id: 2 }] } });
   expect(get(queryState)).toMatchObject(dataPacket({ tasks: [{ id: 2 }] }));
 });

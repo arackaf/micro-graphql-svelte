@@ -75,7 +75,7 @@ function generateTests(name, getClient, queryProps = () => ({}), mutationProps =
     await sync({ assignedTo: null });
     expect(get(queryState).data).toEqual({ a: 1 });
 
-    await get(mutationState).runMutation();
+    await get(mutationState).runMutation(null);
     expect(get(queryState).data).toEqual({ a: 99 });
   });
 
@@ -105,7 +105,7 @@ function generateTests(name, getClient, queryProps = () => ({}), mutationProps =
     await sync({ assignedTo: 1 });
     expect(get(queryState).data).toEqual({ a: 1 });
 
-    await get(mutationState).runMutation();
+    await get(mutationState).runMutation(null);
     expect(get(queryState).data).toEqual({ a: 99 });
   });
 }

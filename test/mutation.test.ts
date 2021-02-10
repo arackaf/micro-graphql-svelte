@@ -25,14 +25,14 @@ test("Mutation function exists", () => {
 
 test("Mutation function calls", () => {
   const mutationState = get(mutation("A").mutationState);
-  mutationState.runMutation();
+  mutationState.runMutation(null);
 
   expect(client1.mutationsRun).toBe(1);
 });
 
 test("Mutation function calls client override", () => {
   const mutationState = get(mutation("A", { client: client2 }).mutationState);
-  mutationState.runMutation();
+  mutationState.runMutation(null);
 
   expect(client1.mutationsRun).toBe(0);
   expect(client2.mutationsRun).toBe(1);
@@ -40,16 +40,16 @@ test("Mutation function calls client override", () => {
 
 test("Mutation function calls twice", () => {
   const mutationState = get(mutation("A").mutationState);
-  mutationState.runMutation();
-  mutationState.runMutation();
+  mutationState.runMutation(null);
+  mutationState.runMutation(null);
 
   expect(client1.mutationsRun).toBe(2);
 });
 
 test("Mutation function calls twice - client override", () => {
   const mutationState = get(mutation("A", { client: client2 }).mutationState);
-  mutationState.runMutation();
-  mutationState.runMutation();
+  mutationState.runMutation(null);
+  mutationState.runMutation(null);
 
   expect(client1.mutationsRun).toBe(0);
   expect(client2.mutationsRun).toBe(2);
