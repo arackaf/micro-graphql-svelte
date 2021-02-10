@@ -6,7 +6,7 @@ import { pause } from "./testUtil";
 
 const LOAD_TASKS = "A";
 
-let client1;
+let client1: ClientMock;
 
 beforeEach(() => {
   client1 = new ClientMock("endpoint1");

@@ -5,8 +5,6 @@
     "paths": {},
     "target": "esnext",
     "strict": true,
-    "noImplicitAny": false,
-    "strictNullChecks": false,
     "types": ["svelte"],
     "moduleResolution": "node"
   },

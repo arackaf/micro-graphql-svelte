@@ -6,7 +6,7 @@ const LOAD_TASKS = "A";
 const LOAD_USERS = "B";
 const UPDATE_USER = "M";
 
-let client1: any;
+let client1: ClientMock;
 let ComponentToUse: any;
 let renders = 0;
 
