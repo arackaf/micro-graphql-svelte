@@ -1,5 +1,5 @@
 import { Writable } from "svelte/store";
-import Client, { SubscriptionItem } from "./client";
+import Client, { FullSubscriptionItem } from "./client";
 import Cache, { GraphQLResponse } from "./cache";
 
 export type QueryOptions = {
@@ -9,7 +9,7 @@ export type QueryOptions = {
   activate?: (store: Writable<any>) => void;
   deactivate?: (store: Writable<any>) => void;
   postProcess: (resp: unknown) => unknown;
-  onMutation: SubscriptionItem | SubscriptionItem[]
+  onMutation: FullSubscriptionItem | FullSubscriptionItem[]
 }
 
 export type QueryState = {

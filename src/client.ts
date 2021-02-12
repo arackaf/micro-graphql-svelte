@@ -37,7 +37,12 @@ export type SubscriptionTrigger = string | RegExp;
 
 export type SubscriptionItem = {
   when: SubscriptionTrigger;
-  run: (onChangeOptions: MinimalOnMutationPayload | FullMutationQueryPayload, resp: Object, variables: unknown) => void;
+  run: (onChangeOptions: MinimalOnMutationPayload, resp: Object, variables: unknown) => void;
+};
+
+export type FullSubscriptionItem = {
+  when: SubscriptionTrigger;
+  run: (onChangeOptions: FullMutationQueryPayload, resp: Object, variables: unknown) => void;
 };
 
 export default class Client {

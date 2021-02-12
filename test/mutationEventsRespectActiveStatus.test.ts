@@ -31,7 +31,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
     const { queryState, sync } = query("A", {
       onMutation: {
         when: "updateBook",
-        run: ({ cache }: any, { updateBook: { Book } }: any) => {
+        run: ({ cache }, { updateBook: { Book } }) => {
           cache.entries.forEach(([key, results]) => {
             let CachedBook = results.data.Books.find(b => b.id == Book.id);
             CachedBook && Object.assign(CachedBook, Book);
@@ -79,7 +79,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
     const { queryState, sync } = query("A", {
       onMutation: {
         when: "deleteBook",
-        run: ({ cache, refresh }: any, resp, args: any) => {
+        run: ({ cache, refresh }, resp, args) => {
           cache.entries.forEach(([key, results]) => {
             results.data.Books = results.data.Books.filter(b => b.id != args.id);
             refresh();
@@ -122,7 +122,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
     const { queryState, sync } = query("A", {
       onMutation: {
         when: /deleteBook/,
-        run: ({ cache, refresh }: any, resp, args: any) => {
+        run: ({ cache, refresh }, resp, args) => {
           cache.entries.forEach(([key, results]) => {
             results.data.Books = results.data.Books.filter(b => b.id != args.id);
             refresh();
@@ -165,7 +165,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
     const { queryState, sync } = query("A", {
       onMutation: {
         when: "updateBook",
-        run: ({ cache, refresh }: any, { updateBook: { Book } }: any) => {
+        run: ({ cache, refresh }, { updateBook: { Book } }) => {
           cache.entries.forEach(([key, results]) => {
             let newBooks = results.data.Books.map(b => {
               if (b.id == Book.id) {
@@ -211,7 +211,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
     const { queryState, sync } = query("A", {
       onMutation: {
         when: "updateBook",
-        run: ({ cache, refresh }: any, { updateBook: { Book } }: any) => {
+        run: ({ cache, refresh }, { updateBook: { Book } }) => {
           cache.entries.forEach(([key, results]) => {
             let newBooks = results.data.Books.map(b => {
               if (b.id == Book.id) {
@@ -259,7 +259,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
     const { queryState, sync } = query("A", {
       onMutation: {
         when: "updateBook",
-        run: ({ cache, softReset, currentResults }: any, { updateBook: { Book } }: any) => {
+        run: ({ cache, softReset, currentResults }, { updateBook: { Book } }) => {
           componentsCache = cache;
           let CachedBook = currentResults.Books.find(b => b.id == Book.id);
           CachedBook && Object.assign(CachedBook, Book);
@@ -295,7 +295,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
     const { queryState, sync } = query("A", {
       onMutation: {
         when: "updateBook",
-        run: ({ cache, softReset, currentResults }: any, { updateBook: { Book } }: any) => {
+        run: ({ cache, softReset, currentResults }, { updateBook: { Book } }) => {
           componentsCache = cache;
           let CachedBook = currentResults.Books.find(b => b.id == Book.id);
           CachedBook && Object.assign(CachedBook, Book);
@@ -333,7 +333,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
     const { queryState, sync } = query("A", {
       onMutation: {
         when: "updateBook",
-        run: ({ cache, hardReset, currentResults }: any) => {
+        run: ({ cache, hardReset, currentResults }) => {
           componentsCache = cache;
           hardReset();
         }
@@ -378,7 +378,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
     const { queryState, sync } = query("A", {
       onMutation: {
         when: "updateBook",
-        run: ({ cache, hardReset, currentResults }: any) => {
+        run: ({ cache, hardReset, currentResults }) => {
           componentsCache = cache;
           hardReset();
         }
