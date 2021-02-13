@@ -2,7 +2,9 @@ import { get } from "svelte/store";
 
 import { setDefaultClient, mutation, query, Cache } from "../src/index";
 import ClientMock from "./clientMock";
+import { UpdateBookResult } from "./GraphQLTypes";
 import { dataPacket, deferred, pause, resolveDeferred } from "./testUtil";
+import { GraphQLResponse } from "../src/cache";
 
 let client1;
 let client2;
@@ -31,10 +33,13 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
     const { queryState, sync } = query("A", {
       onMutation: {
         when: "updateBook",
-        run: ({ cache }, { updateBook: { Book } }) => {
+        run: ({ cache }, { updateBook: { Book } }: UpdateBookResult) => {
           cache.entries.forEach(([key, results]) => {
-            let CachedBook = results.data.Books.find(b => b.id == Book.id);
-            CachedBook && Object.assign(CachedBook, Book);
+            if (!(results instanceof Promise)) {
+              
+              let CachedBook = (<GraphQLResponse<any>>results).data.Books.find(b => b.id == Book.id);
+              CachedBook && Object.assign(CachedBook, Book);
+            }
           });
         }
       },

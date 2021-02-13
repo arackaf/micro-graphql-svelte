@@ -1,6 +1,6 @@
-export type GraphQLResponse = {
+export type GraphQLResponse<T = unknown> = {
   errors?: unknown;
-  data?: unknown;
+  data?: T;
 };
 
 type CachedEntry = {
