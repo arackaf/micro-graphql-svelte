@@ -3,7 +3,7 @@ import Cache, { DEFAULT_CACHE_SIZE } from "./cache";
 type QueryPacket = {
   query: string;
   variables: unknown;
-}
+};
 
 type ClientOptions = {
   endpoint: string;
@@ -37,17 +37,26 @@ export type SubscriptionTrigger = string | RegExp;
 
 export type SubscriptionItem = {
   when: SubscriptionTrigger;
-  run: (onChangeOptions: MinimalOnMutationPayload, resp: Object, variables: unknown) => void;
+  run: (onChangeOptions: MinimalOnMutationPayload, resp?: any, variables?: any) => void;
+};
+export type BasicSubscriptionEntry = SubscriptionItem & {
+  type: "Basic";
 };
 
 export type FullSubscriptionItem = {
   when: SubscriptionTrigger;
-  run: (onChangeOptions: FullMutationQueryPayload, resp: Object, variables: unknown) => void;
+  run: (onChangeOptions: FullMutationQueryPayload, resp?: any, variables?: any) => void;
 };
+
+export type FullSubscriptionEntry = FullSubscriptionItem & {
+  type: "Full";
+};
+
+type SubscriptionEntry = BasicSubscriptionEntry | FullSubscriptionEntry;
 
 export default class Client {
   private caches = new Map<string, Cache>();
-  private mutationListeners = new Set<{ subscription: SubscriptionItem[]; options?: OnMutationQuerySetup }>();
+  private mutationListeners = new Set<{ subscription: (BasicSubscriptionEntry | FullSubscriptionEntry)[]; options?: OnMutationQuerySetup }>();
   private forceListeners = new Map<string, Set<() => void>>();
   private cacheSize?: number;
   private fetchOptions?: RequestInit;
@@ -127,12 +136,14 @@ export default class Client {
     if (!Array.isArray(subscription)) {
       subscription = [subscription];
     }
-    const packet = { subscription };
+
+    const entries: BasicSubscriptionEntry[] = subscription.map(entry => ({ ...entry, type: "Basic" }));
+    const packet = { subscription: entries };
     this.mutationListeners.add(packet);
 
     return () => this.mutationListeners.delete(packet);
   }
-  subscribeQuery(subscription: SubscriptionItem | SubscriptionItem[], options: OnMutationQuerySetup) {
+  subscribeQuery(subscription: FullSubscriptionEntry[], options: OnMutationQuerySetup) {
     if (!Array.isArray(subscription)) {
       subscription = [subscription];
     }
@@ -159,46 +170,47 @@ export default class Client {
     return () => this.forceListeners.get(query)!.delete(refresh);
   }
   processMutation(mutation: string, variables: unknown) {
-    const refreshActiveQueries = (query: string) => this.forceUpdate(query);
     return Promise.resolve(this.runMutation(mutation, variables)).then(resp => {
       let mutationKeys = Object.keys(resp);
       let mutationKeysLookup = new Set(mutationKeys);
       [...this.mutationListeners].forEach(({ subscription, options }) => {
-        subscription.forEach(singleSubscription => {
+        subscription.forEach(sub => {
           if (options && typeof options.isActive === "function") {
             if (!options.isActive()) {
               return;
             }
           }
 
-          let args: MinimalOnMutationPayload | FullMutationQueryPayload;
-
-          if (options) {
-            args = {
-              ...options,
-              currentResults: options.currentResults(),
-              refreshActiveQueries
-            };
-          } else {
-            args = {
-              refreshActiveQueries
-            };
-          }
-
-          if (typeof singleSubscription.when === "string") {
-            if (mutationKeysLookup.has(singleSubscription.when)) {
-              //if (options)
-              singleSubscription.run(args, resp, variables);
+          if (typeof sub.when === "string") {
+            if (mutationKeysLookup.has(sub.when)) {
+              this.executeMutationSubscription(sub, options, resp, variables);
             }
-          } else if (singleSubscription.when instanceof RegExp) {
-            if ([...mutationKeysLookup].some(k => (singleSubscription.when as RegExp).test(k))) {
-              singleSubscription.run(args, resp, variables);
+          } else if (sub.when instanceof RegExp) {
+            if ([...mutationKeysLookup].some(k => (sub.when as RegExp).test(k))) {
+              this.executeMutationSubscription(sub, options, resp, variables);
             }
           }
         });
       });
       return resp;
     });
+  }
+  private executeMutationSubscription(sub: SubscriptionEntry, options: OnMutationQuerySetup, resp: unknown, variables: unknown) {
+    const refreshActiveQueries = (query: string) => this.forceUpdate(query);
+
+    if (sub.type === "Basic") {
+      let basicArgs: MinimalOnMutationPayload = {
+        refreshActiveQueries
+      };
+      sub.run(basicArgs, resp, variables);
+    } else {
+      let fullArgs: FullMutationQueryPayload = {
+        ...options,
+        currentResults: options.currentResults(),
+        refreshActiveQueries
+      };
+      sub.run(fullArgs, resp, variables);
+    }
   }
   runMutation(mutation: string, variables: unknown) {
     let { headers = {}, ...otherOptions } = this.fetchOptions || {};

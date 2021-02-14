@@ -1,5 +1,5 @@
 import { Writable } from "svelte/store";
-import Client, { FullSubscriptionItem } from "./client";
+import Client, { FullSubscriptionEntry, FullSubscriptionItem } from "./client";
 import Cache, { GraphQLResponse } from "./cache";
 
 export type QueryOptions = {
@@ -59,6 +59,8 @@ export default class QueryManager {
   };
   currentState: QueryState;
 
+  onMutation: FullSubscriptionEntry[]
+
   constructor({ query, client, setState, cache }: QueryManagerOptions, options: Partial<QueryOptions>) {
     this.query = query;
     this.client = client;
@@ -71,6 +73,8 @@ export default class QueryManager {
       if (!Array.isArray(options.onMutation)) {
         options.onMutation = [options.onMutation];
       }
+
+      this.onMutation = options.onMutation.map(entry => ({ ...entry, type: "Full" }));
     }
     this.currentState = {
       ...QueryManager.initialState,
@@ -179,7 +183,7 @@ export default class QueryManager {
   };
   activate() {
     if (typeof this.options.onMutation === "object") {
-      this.mutationSubscription = this.client.subscribeQuery(this.options.onMutation, {
+      this.mutationSubscription = this.client.subscribeQuery(this.onMutation, {
         cache: this.cache,
         softReset: this.softReset,
         hardReset: this.hardReset,

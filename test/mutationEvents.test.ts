@@ -5,6 +5,7 @@ import ClientMock from "./clientMock";
 import { UpdateBookResult } from "./GraphQLTypes";
 import { dataPacket, deferred, pause, resolveDeferred } from "./testUtil";
 import { GraphQLResponse } from "../src/cache";
+import { FullSubscriptionItem } from "../src/client";
 
 let client1;
 let client2;
@@ -33,11 +34,10 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
     const { queryState, sync } = query("A", {
       onMutation: {
         when: "updateBook",
-        run: ({ cache }, { updateBook: { Book } }: UpdateBookResult) => {
-          cache.entries.forEach(([key, results]) => {
+        run: ({ cache }, { updateBook: { Book } }: UpdateBookResult, x: any) => {
+          cache.entries.forEach(([key, results]: any) => {
             if (!(results instanceof Promise)) {
-              
-              let CachedBook = (<GraphQLResponse<any>>results).data.Books.find(b => b.id == Book.id);
+              let CachedBook: any = results.data.Books.find(b => b.id == Book.id);
               CachedBook && Object.assign(CachedBook, Book);
             }
           });
@@ -84,7 +84,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
       onMutation: {
         when: "deleteBook",
         run: ({ cache, refresh }, resp, args) => {
-          cache.entries.forEach(([key, results]) => {
+          cache.entries.forEach(([key, results]: any) => {
             results.data.Books = results.data.Books.filter(b => b.id != args.id);
             refresh();
           });
@@ -126,7 +126,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
       onMutation: {
         when: "deleteBook",
         run: ({ cache, refresh }, resp, args) => {
-          cache.entries.forEach(([key, results]) => {
+          cache.entries.forEach(([key, results]: any) => {
             results.data.Books = results.data.Books.filter(b => b.id != args.id);
             refresh();
           });
@@ -168,7 +168,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
       onMutation: {
         when: /deleteBook/,
         run: ({ cache, refresh }, resp, args) => {
-          cache.entries.forEach(([key, results]) => {
+          cache.entries.forEach(([key, results]: any) => {
             results.data.Books = results.data.Books.filter(b => b.id != args.id);
             refresh();
           });
@@ -210,7 +210,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
       onMutation: {
         when: "updateBook",
         run: ({ cache, refresh }, { updateBook: { Book } }) => {
-          cache.entries.forEach(([key, results]) => {
+          cache.entries.forEach(([key, results]: any) => {
             let newBooks = results.data.Books.map(b => {
               if (b.id == Book.id) {
                 return Object.assign({}, b, Book);
@@ -260,7 +260,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
     const { queryState, sync } = query("A", {
       onMutation: {
         when: "updateBook",
-        run: ({ cache, softReset, currentResults }, { updateBook: { Book } }) => {
+        run: ({ cache, softReset, currentResults }: any, { updateBook: { Book } }) => {
           componentsCache = cache;
           let CachedBook = currentResults.Books.find(b => b.id == Book.id);
           CachedBook && Object.assign(CachedBook, Book);
@@ -300,7 +300,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
     const { queryState, sync } = query("A", {
       onMutation: {
         when: "updateBook",
-        run: ({ cache, softReset, currentResults }, { updateBook: { Book } }) => {
+        run: ({ cache, softReset, currentResults }: any, { updateBook: { Book } }) => {
           componentsCache = cache;
           let CachedBook = currentResults.Books.find(b => b.id == Book.id);
           CachedBook && Object.assign(CachedBook, Book);
@@ -359,7 +359,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
     const { queryState, sync } = query("A", {
       onMutation: {
         when: "updateBook",
-        run: ({ cache, softReset, currentResults }, { updateBook: { Book } }) => {
+        run: ({ cache, softReset, currentResults }: any, { updateBook: { Book } }) => {
           componentsCache = cache;
           let CachedBook = currentResults.Books.find(b => b.id == Book.id);
           CachedBook && Object.assign(CachedBook, Book);
@@ -491,7 +491,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
     const { queryState, sync } = query("A", {
       onMutation: {
         when: "updateBook",
-        run: ({ cache, softReset, currentResults }, { updateBook: { Book } }) => {
+        run: ({ cache, softReset, currentResults }: any, { updateBook: { Book } }) => {
           componentsCache = cache;
           let CachedBook = currentResults.Books.find(b => b.id == Book.id);
           CachedBook && Object.assign(CachedBook, Book);
