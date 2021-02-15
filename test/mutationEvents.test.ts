@@ -6,6 +6,7 @@ import { UpdateBookResult } from "./GraphQLTypes";
 import { dataPacket, deferred, pause, resolveDeferred } from "./testUtil";
 import { GraphQLResponse } from "../src/cache";
 import { FullSubscriptionItem } from "../src/client";
+import { OnMutationPayload } from "../src/client";
 
 let client1;
 let client2;
@@ -491,7 +492,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
     const { queryState, sync } = query("A", {
       onMutation: {
         when: "updateBook",
-        run: ({ cache, softReset, currentResults }: any, { updateBook: { Book } }) => {
+        run: ({ cache, softReset, currentResults }: OnMutationPayload<{ Books: { id: number }[] }>, { updateBook: { Book } }: UpdateBookResult) => {
           componentsCache = cache;
           let CachedBook = currentResults.Books.find(b => b.id == Book.id);
           CachedBook && Object.assign(CachedBook, Book);

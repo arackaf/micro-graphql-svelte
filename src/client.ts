@@ -24,12 +24,12 @@ type MinimalOnMutationPayload = {
   refreshActiveQueries: (query: string) => void;
 };
 
-export type FullMutationQueryPayload = {
+export type OnMutationPayload<T = unknown> = {
   cache: Cache;
   softReset: (newResults: Object) => void;
   hardReset: () => void;
   refresh: () => void;
-  currentResults: unknown;
+  currentResults: T;
   isActive: () => boolean;
   refreshActiveQueries: (query: string) => void;
 };
@@ -37,7 +37,7 @@ export type SubscriptionTrigger = string | RegExp;
 
 export type SubscriptionItem = {
   when: SubscriptionTrigger;
-  run: (onChangeOptions: MinimalOnMutationPayload, resp?: any, variables?: any) => void;
+  run(onChangeOptions: MinimalOnMutationPayload, resp?: any, variables?: any): void;
 };
 export type BasicSubscriptionEntry = SubscriptionItem & {
   type: "Basic";
@@ -45,7 +45,7 @@ export type BasicSubscriptionEntry = SubscriptionItem & {
 
 export type FullSubscriptionItem = {
   when: SubscriptionTrigger;
-  run: (onChangeOptions: FullMutationQueryPayload, resp?: any, variables?: any) => void;
+  run(onChangeOptions: OnMutationPayload, resp?: any, variables?: any): void;
 };
 
 export type FullSubscriptionEntry = FullSubscriptionItem & {
@@ -204,7 +204,7 @@ export default class Client {
       };
       sub.run(basicArgs, resp, variables);
     } else {
-      let fullArgs: FullMutationQueryPayload = {
+      let fullArgs: OnMutationPayload = {
         ...options,
         currentResults: options.currentResults(),
         refreshActiveQueries
