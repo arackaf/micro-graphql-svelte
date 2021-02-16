@@ -12,6 +12,10 @@ let client1;
 let client2;
 let sub;
 
+type BookResults = {
+  Books: { id: number }[]
+}
+
 beforeEach(() => {
   client1 = new ClientMock("endpoint1");
   client2 = new ClientMock("endpoint1");
@@ -84,7 +88,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
     const { queryState, sync } = query("A", {
       onMutation: {
         when: "deleteBook",
-        run: ({ cache, refresh }, resp, args) => {
+        run: ({ cache, refresh }, resp, args: any) => {
           cache.entries.forEach(([key, results]: any) => {
             results.data.Books = results.data.Books.filter(b => b.id != args.id);
             refresh();
@@ -126,7 +130,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
     const { queryState, sync } = query("A", {
       onMutation: {
         when: "deleteBook",
-        run: ({ cache, refresh }, resp, args) => {
+        run: ({ cache, refresh }, resp, args: any) => {
           cache.entries.forEach(([key, results]: any) => {
             results.data.Books = results.data.Books.filter(b => b.id != args.id);
             refresh();
@@ -168,7 +172,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
     const { queryState, sync } = query("A", {
       onMutation: {
         when: /deleteBook/,
-        run: ({ cache, refresh }, resp, args) => {
+        run: ({ cache, refresh }, resp, args: any) => {
           cache.entries.forEach(([key, results]: any) => {
             results.data.Books = results.data.Books.filter(b => b.id != args.id);
             refresh();
@@ -258,10 +262,10 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
     let componentsCache;
 
     const client = getClient();
-    const { queryState, sync } = query("A", {
+    const { queryState, sync } = query<BookResults>("A", {
       onMutation: {
         when: "updateBook",
-        run: ({ cache, softReset, currentResults }: any, { updateBook: { Book } }) => {
+        run: ({ cache, softReset, currentResults }, { updateBook: { Book } }) => {
           componentsCache = cache;
           let CachedBook = currentResults.Books.find(b => b.id == Book.id);
           CachedBook && Object.assign(CachedBook, Book);
@@ -298,10 +302,10 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
   test("Mutation listener - soft reset - re-render does not re-fetch", async () => {
     let componentsCache;
     const client = getClient();
-    const { queryState, sync } = query("A", {
+    const { queryState, sync } = query<BookResults>("A", {
       onMutation: {
         when: "updateBook",
-        run: ({ cache, softReset, currentResults }: any, { updateBook: { Book } }) => {
+        run: ({ cache, softReset, currentResults }, { updateBook: { Book } }) => {
           componentsCache = cache;
           let CachedBook = currentResults.Books.find(b => b.id == Book.id);
           CachedBook && Object.assign(CachedBook, Book);
@@ -357,10 +361,10 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
   test("Mutation listener - soft reset - re-render when you come back", async () => {
     let componentsCache;
     const client1 = getClient();
-    const { queryState, sync } = query("A", {
+    const { queryState, sync } = query<BookResults>("A", {
       onMutation: {
         when: "updateBook",
-        run: ({ cache, softReset, currentResults }: any, { updateBook: { Book } }) => {
+        run: ({ cache, softReset, currentResults }, { updateBook: { Book } }) => {
           componentsCache = cache;
           let CachedBook = currentResults.Books.find(b => b.id == Book.id);
           CachedBook && Object.assign(CachedBook, Book);
@@ -444,7 +448,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
     const { queryState, sync } = query("A", {
       onMutation: {
         when: "updateBook",
-        run: ({ cache, hardReset, currentResults }) => {
+        run: ({ cache, hardReset }) => {
           componentsCache = cache;
           hardReset();
         }
@@ -489,10 +493,10 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
   test("Mutation listener - new component, re-queries", async () => {
     let componentsCache;
     const client = getClient();
-    const { queryState, sync } = query("A", {
+    const { queryState, sync } = query<BookResults>("A", {
       onMutation: {
         when: "updateBook",
-        run: ({ cache, softReset, currentResults }: OnMutationPayload<{ Books: { id: number }[] }>, { updateBook: { Book } }: UpdateBookResult) => {
+        run: ({ cache, softReset, currentResults }, { updateBook: { Book } }: UpdateBookResult) => {
           componentsCache = cache;
           let CachedBook = currentResults.Books.find(b => b.id == Book.id);
           CachedBook && Object.assign(CachedBook, Book);

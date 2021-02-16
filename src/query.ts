@@ -4,7 +4,7 @@ import Client, { defaultClientManager } from "./client";
 import QueryManager, { QueryLoadOptions, QueryOptions, QueryState } from "./queryManager";
 
 
-export default function query(query: string, options: Partial<QueryOptions> = {}) {
+export default function query<TResults = unknown>(query: string, options: Partial<QueryOptions<TResults>> = {}) {
   let queryManager: QueryManager;
   const queryStore = writable<Partial<QueryState>>(QueryManager.initialState, () => {
     options.activate && options.activate(queryStore);

@@ -24,12 +24,12 @@ type MinimalOnMutationPayload = {
   refreshActiveQueries: (query: string) => void;
 };
 
-export type OnMutationPayload<T = unknown> = {
+export type OnMutationPayload<TResults = unknown> = {
   cache: Cache;
   softReset: (newResults: Object) => void;
   hardReset: () => void;
   refresh: () => void;
-  currentResults: T;
+  currentResults: TResults;
   isActive: () => boolean;
   refreshActiveQueries: (query: string) => void;
 };
@@ -43,9 +43,9 @@ export type BasicSubscriptionEntry = SubscriptionItem & {
   type: "Basic";
 };
 
-export type FullSubscriptionItem = {
+export type FullSubscriptionItem<TResults=  unknown> = {
   when: SubscriptionTrigger;
-  run(onChangeOptions: OnMutationPayload, resp?: any, variables?: any): void;
+  run(onChangeOptions: OnMutationPayload<TResults>, resp?: unknown, variables?: unknown): void;
 };
 
 export type FullSubscriptionEntry = FullSubscriptionItem & {
