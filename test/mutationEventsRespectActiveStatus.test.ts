@@ -171,23 +171,25 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
 
   test("Mutation listener updates cache then refreshes from cache", async () => {
     const client = getClient();
-    const { queryState, sync } = query("A", {
+    const { queryState, sync } = query<BookResultsType>("A", {
       onMutation: {
         when: "updateBook",
         run: ({ cache, refresh }, { updateBook: { Book } }) => {
           cache.entries.forEach(([key, results]) => {
-            let newBooks = results.data.Books.map(b => {
-              if (b.id == Book.id) {
-                return Object.assign({}, b, Book);
-              }
-              return b;
-            });
-            //do this immutable crap just to make sure tests don't accidentally pass because of object references to current props being updated - in real life the component would not be re-rendered, but here's we're verifying the props directly
-            let newResults = { ...results };
-            newResults.data = { ...newResults.data };
-            newResults.data.Books = newBooks;
-            cache.set(key, newResults);
-            refresh();
+            if (!(results instanceof Promise)) {
+              let newBooks = results.data.Books.map(b => {
+                if (b.id == Book.id) {
+                  return Object.assign({}, b, Book);
+                }
+                return b;
+              });
+              //do this immutable crap just to make sure tests don't accidentally pass because of object references to current props being updated - in real life the component would not be re-rendered, but here's we're verifying the props directly
+              let newResults = { ...results };
+              newResults.data = { ...newResults.data };
+              newResults.data.Books = newBooks;
+              cache.set(key, newResults);
+              refresh();
+            }
           });
         }
       },
@@ -217,23 +219,25 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
 
   test("Mutation listener updates cache then refreshes from cache 2", async () => {
     const client = getClient();
-    const { queryState, sync } = query("A", {
+    const { queryState, sync } = query<BookResultsType>("A", {
       onMutation: {
         when: "updateBook",
         run: ({ cache, refresh }, { updateBook: { Book } }) => {
           cache.entries.forEach(([key, results]) => {
-            let newBooks = results.data.Books.map(b => {
-              if (b.id == Book.id) {
-                return Object.assign({}, b, Book);
-              }
-              return b;
-            });
-            //do this immutable crap just to make sure tests don't accidentally pass because of object references to current props being updated - in real life the component would not be re-rendered, but here's we're verifying the props directly
-            let newResults = { ...results };
-            newResults.data = { ...newResults.data };
-            newResults.data.Books = newBooks;
-            cache.set(key, newResults);
-            refresh();
+            if (!(results instanceof Promise)) {
+              let newBooks = results.data.Books.map(b => {
+                if (b.id == Book.id) {
+                  return Object.assign({}, b, Book);
+                }
+                return b;
+              });
+              //do this immutable crap just to make sure tests don't accidentally pass because of object references to current props being updated - in real life the component would not be re-rendered, but here's we're verifying the props directly
+              let newResults = { ...results };
+              newResults.data = { ...newResults.data };
+              newResults.data.Books = newBooks;
+              cache.set(key, newResults);
+              refresh();
+            }
           });
         }
       },
