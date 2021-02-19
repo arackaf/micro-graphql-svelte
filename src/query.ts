@@ -3,7 +3,6 @@ import Client, { defaultClientManager } from "./client";
 
 import QueryManager, { QueryLoadOptions, QueryOptions, QueryState } from "./queryManager";
 
-
 export default function query<TResults = unknown>(query: string, options: Partial<QueryOptions<TResults>> = {}) {
   let queryManager: QueryManager<TResults>;
   const queryStore = writable<QueryState<TResults>>(QueryManager.initialState, () => {

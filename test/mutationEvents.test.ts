@@ -4,9 +4,6 @@ import { setDefaultClient, mutation, query, Cache } from "../src/index";
 import ClientMock from "./clientMock";
 import { UpdateBookResult } from "./GraphQLTypes";
 import { dataPacket, deferred, pause, resolveDeferred } from "./testUtil";
-import { GraphQLResponse } from "../src/cache";
-import { FullSubscriptionItem } from "../src/client";
-import { OnMutationPayload } from "../src/client";
 
 let client1;
 let client2;

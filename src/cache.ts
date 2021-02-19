@@ -1,12 +1,4 @@
-export type GraphQLResponse<TData> = {
-  errors?: unknown;
-  data?: TData;
-};
-
-type CachedEntry<TData> = {
-  error?: unknown;
-  data?: TData;
-};
+import { GraphQLResponse, CachedEntry } from "./queryTypes"
 
 export default class Cache<TData = unknown> {
   constructor(private cacheSize = DEFAULT_CACHE_SIZE) {

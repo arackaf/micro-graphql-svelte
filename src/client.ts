@@ -1,58 +1,5 @@
 import Cache, { DEFAULT_CACHE_SIZE } from "./cache";
-
-type QueryPacket = {
-  query: string;
-  variables: unknown;
-};
-
-type ClientOptions = {
-  endpoint: string;
-  cacheSize?: number;
-  noCaching?: boolean;
-};
-
-type OnMutationQuerySetup = {
-  cache: Cache;
-  softReset: (newResults: Object) => void;
-  hardReset: () => void;
-  refresh: () => void;
-  currentResults: () => unknown;
-  isActive: () => boolean;
-};
-
-type MinimalOnMutationPayload = {
-  refreshActiveQueries: (query: string) => void;
-};
-
-export type OnMutationPayload<TResults = unknown> = {
-  cache: Cache<TResults>;
-  softReset: (newResults: Object) => void;
-  hardReset: () => void;
-  refresh: () => void;
-  currentResults: TResults;
-  isActive: () => boolean;
-  refreshActiveQueries: (query: string) => void;
-};
-export type SubscriptionTrigger = string | RegExp;
-
-export type SubscriptionItem = {
-  when: SubscriptionTrigger;
-  run(onChangeOptions: MinimalOnMutationPayload, resp?: any, variables?: any): void;
-};
-export type BasicSubscriptionEntry = SubscriptionItem & {
-  type: "Basic";
-};
-
-export type FullSubscriptionItem<TResults=  unknown> = {
-  when: SubscriptionTrigger;
-  run(onChangeOptions: OnMutationPayload<TResults>, resp?: unknown, variables?: unknown): void;
-};
-
-export type FullSubscriptionEntry = FullSubscriptionItem & {
-  type: "Full";
-};
-
-type SubscriptionEntry = BasicSubscriptionEntry | FullSubscriptionEntry;
+import { BasicSubscriptionEntry, ClientOptions, FullSubscriptionEntry, MinimalOnMutationPayload, OnMutationPayload, OnMutationQuerySetup, QueryPacket, SubscriptionEntry, SubscriptionItem } from "./queryTypes";
 
 export default class Client {
   private caches = new Map<string, Cache>();

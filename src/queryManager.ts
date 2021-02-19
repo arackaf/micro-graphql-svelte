@@ -1,6 +1,7 @@
 import { Writable } from "svelte/store";
-import Client, { FullSubscriptionEntry, FullSubscriptionItem } from "./client";
-import Cache, { GraphQLResponse } from "./cache";
+import Client from "./client";
+import Cache from "./cache";
+import { FullSubscriptionEntry, FullSubscriptionItem, GraphQLResponse } from "./queryTypes";
 
 export type QueryOptions<TData = unknown> = {
   client: Client;
