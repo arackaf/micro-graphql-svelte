@@ -25,7 +25,7 @@ type MinimalOnMutationPayload = {
 };
 
 export type OnMutationPayload<TResults = unknown> = {
-  cache: Cache;
+  cache: Cache<TResults>;
   softReset: (newResults: Object) => void;
   hardReset: () => void;
   refresh: () => void;
@@ -80,8 +80,8 @@ export default class Client {
     }
     return DEFAULT_CACHE_SIZE;
   }
-  getCache(query: string) {
-    return this.caches.get(query);
+  getCache<TData>(query: string): Cache<TData> {
+    return this.caches.get(query) as Cache<TData>;
   }
   preload(query: string, variables: unknown) {
     let cache = this.getCache(query);
@@ -113,8 +113,8 @@ export default class Client {
     );
     return promiseResult;
   }
-  newCacheForQuery(query: string) {
-    let newCache = new Cache(this.cacheSizeToUse);
+  newCacheForQuery<TData>(query: string) {
+    let newCache = new Cache<TData>(this.cacheSizeToUse);
     this.setCache(query, newCache);
     return newCache;
   }

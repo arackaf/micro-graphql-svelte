@@ -2,20 +2,20 @@ import { Writable } from "svelte/store";
 import Client, { FullSubscriptionEntry, FullSubscriptionItem } from "./client";
 import Cache, { GraphQLResponse } from "./cache";
 
-export type QueryOptions<TResults = unknown> = {
+export type QueryOptions<TData = unknown> = {
   client: Client;
-  cache?: Cache;
+  cache?: Cache<TData>;
   initialSearch?: string;
-  activate?: (store: Writable<any>) => void;
-  deactivate?: (store: Writable<any>) => void;
+  activate?: (store: Writable<QueryState<TData>>) => void;
+  deactivate?: (store: Writable<QueryState<TData>>) => void;
   postProcess: (resp: unknown) => unknown;
-  onMutation: FullSubscriptionItem<TResults> | FullSubscriptionItem<TResults>[]
+  onMutation: FullSubscriptionItem<TData> | FullSubscriptionItem<TData>[]
 }
 
-export type QueryState = {
+export type QueryState<TData = unknown> = {
   loading: boolean;
   loaded: boolean;
-  data: unknown;
+  data: TData;
   error: unknown;
   reload: () => void;
   clearCache: () => void;
@@ -28,20 +28,20 @@ export type QueryLoadOptions = {
   active?: boolean;
 }
 
-type QueryManagerOptions = {
+type QueryManagerOptions<TData = unknown> = {
   query: string;
   client: Client;
-  setState: (newState: Partial<QueryState>) => void;
-  cache?: Cache;
+  setState: (newState: QueryState<TData>) => void;
+  cache?: Cache<TData>;
 }
 
-export default class QueryManager {
+export default class QueryManager<TData = unknown> {
   query: string;
   client: Client;
   active = true;
-  setState: (newState: Object) => void;
+  setState: (newState: QueryState<TData>) => void;
   options: any;
-  cache: Cache;
+  cache: Cache<TData>;
   postProcess?: (resp: unknown) => unknown;
   currentUri = "";
 
@@ -55,18 +55,21 @@ export default class QueryManager {
     loaded: false,
     data: null,
     error: null,
-    currentQuery: ""
+    currentQuery: "",
+    reload: null,
+    clearCache: null,
+    clearCacheAndReload: null
   };
-  currentState: QueryState;
+  currentState: QueryState<TData>;
 
   onMutation: FullSubscriptionEntry[]
 
-  constructor({ query, client, setState, cache }: QueryManagerOptions, options: Partial<QueryOptions>) {
+  constructor({ query, client, setState, cache }: QueryManagerOptions<TData>, options: Partial<QueryOptions<TData>>) {
     this.query = query;
     this.client = client;
     this.setState = setState;
     this.options = options;
-    this.cache = cache || client.getCache(query) || client.newCacheForQuery(query);
+    this.cache = cache || client.getCache<TData>(query) || client.newCacheForQuery(query);
     this.postProcess = options?.postProcess;
 
     if (typeof options?.onMutation === "object") {
@@ -161,7 +164,7 @@ export default class QueryManager {
     this.cache.setPendingResult(graphqlQuery, promise);
     this.handleExecution(promise, graphqlQuery);
   }
-  handleExecution = (promise: Promise<GraphQLResponse>, cacheKey: string) => {
+  handleExecution = (promise: Promise<GraphQLResponse<TData>>, cacheKey: string) => {
     this.currentPromise = promise;
     Promise.resolve(promise)
       .then(resp => {

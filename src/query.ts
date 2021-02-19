@@ -5,8 +5,8 @@ import QueryManager, { QueryLoadOptions, QueryOptions, QueryState } from "./quer
 
 
 export default function query<TResults = unknown>(query: string, options: Partial<QueryOptions<TResults>> = {}) {
-  let queryManager: QueryManager;
-  const queryStore = writable<Partial<QueryState>>(QueryManager.initialState, () => {
+  let queryManager: QueryManager<TResults>;
+  const queryStore = writable<QueryState<TResults>>(QueryManager.initialState, () => {
     options.activate && options.activate(queryStore);
     queryManager.activate();
     return () => {
@@ -20,7 +20,7 @@ export default function query<TResults = unknown>(query: string, options: Partia
     throw "Default Client not configured";
   }
   
-  queryManager = new QueryManager({ query, client, cache: options?.cache, setState: queryStore.set }, options);
+  queryManager = new QueryManager<TResults>({ query, client, cache: options?.cache, setState: queryStore.set }, options);
   const sync = (variables: unknown, options?: QueryLoadOptions) => queryManager.load([query, variables], options);
 
   if (options.initialSearch) {

@@ -25,6 +25,7 @@
     "@std/esm": "0.19.7",
     "@testing-library/svelte": "^3.0.0",
     "@types/jest": "^26.0.20",
+    "@types/node": "^14.14.28",
     "babel-jest": "^26.6.1",
     "babel-loader": "^8.1.0",
     "classnames": "^2.2.6",
