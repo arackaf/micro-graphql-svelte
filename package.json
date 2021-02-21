@@ -19,7 +19,7 @@
     "@babel/plugin-proposal-class-properties": "^7.3.4",
     "@babel/plugin-proposal-nullish-coalescing-operator": "^7.12.1",
     "@babel/plugin-proposal-object-rest-spread": "^7.3.4",
-    "@babel/plugin-proposal-optional-chaining": "^7.12.1",
+    "@babel/plugin-proposal-optional-chaining": "^7.12.17",
     "@babel/plugin-transform-modules-commonjs": "^7.2.0",
     "@babel/preset-env": "^7.3.4",
     "@std/esm": "0.19.7",
@@ -67,7 +67,7 @@
     "server": "node runServer",
     "prepublishOnly": "npm run build",
     "deploy": "npm run build && npm publish",
-    "build": "rollup -c",
+    "build": "npm run compile-ts && rollup -c",
     "test": "jest --runInBand --bail --detectOpenHandles && codecov",
     "test-local": "jest --runInBand",
     "testw": "jest --runInBand --watchAll",
@@ -76,7 +76,7 @@
     "sizeCheck": "rollup -c && gzip index.min.js && stat index.min.js.gz && rm -f index.min.js.gz",
     "tsc": "tsc --noEmit",
     "tscw": "tsc -w --noEmit",
-    "compile-ts": "tsc"
+    "compile-ts": "tsc --project tsconfig.release.json"
   },
   "dependencies": {},
   "sideEffects": false,

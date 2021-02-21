@@ -1,6 +1,6 @@
 export const deferred = () => {
   let resolve, reject;
-  let p = new Promise((res, rej) => {
+  let p: any = new Promise((res, rej) => {
     resolve = res;
     reject = rej;
   });
@@ -9,13 +9,13 @@ export const deferred = () => {
   return p;
 };
 
-export const resolveDeferred = async (p, val, wrapper) => {
+export const resolveDeferred = async (p: any, val: any, wrapper: any) => {
   p.resolve(val);
   await p;
   wrapper && wrapper.update();
 };
 
-export const rejectDeferred = async (p, val, wrapper) => {
+export const rejectDeferred = async (p: any, val: any, wrapper: any) => {
   try {
     p.reject(val);
   } catch (er) {}
@@ -39,22 +39,22 @@ export const loadingPacket = {
   error: null,
 };
 
-export const dataPacket = (data) => ({
+export const dataPacket = (data: any) => ({
   loading: false,
   loaded: true,
   error: null,
   data,
 });
 
-export const errorPacket = (error) => ({
+export const errorPacket = (error: any) => ({
   loading: false,
   loaded: true,
   error,
   data: null,
 });
 
-export const pause = (wrapper) =>
-  new Promise((res) =>
+export const pause = (wrapper: any) =>
+  new Promise((res: any) =>
     setTimeout(() => {
       wrapper && wrapper.update();
       res();

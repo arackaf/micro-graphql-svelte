@@ -1,11 +1,10 @@
 {
   "compilerOptions": {
-    "noEmit": true,
     "module": "esNext",
     "target": "esnext",
     "strict": true,
     "types": ["svelte", "jest", "node"],
     "moduleResolution": "node"
   },
-  "include": ["./src/index.ts", "./test/**/*.ts"]
+  "include": ["./src/index.ts"]
 }

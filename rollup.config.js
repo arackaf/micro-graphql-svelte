@@ -16,7 +16,7 @@ const getConfig = ({ file, minify = false, presets = [], plugins = [] }) => ({
       babelrc: false,
       exclude: "node_modules/**",
       presets: [...presets],
-      plugins: ["@babel/plugin-proposal-class-properties", ...plugins]
+      plugins: ["@babel/plugin-proposal-class-properties", "@babel/plugin-proposal-optional-chaining", ...plugins]
     }),
     minify && terser({}),
     resolve({}),
