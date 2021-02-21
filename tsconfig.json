@@ -1,13 +1,10 @@
 {
   "compilerOptions": {
     "allowJs": true,
-    "noEmit": true,
     "module": "esNext",
     "paths": {},
     "target": "esnext",
     "strict": true,
-    "noImplicitAny": false,
-    "strictNullChecks": false,
     "types": ["svelte", "jest", "node"],
     "moduleResolution": "node"
   },

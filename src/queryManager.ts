@@ -16,7 +16,7 @@ export type QueryOptions<TData = unknown> = {
 export type QueryState<TData = unknown> = {
   loading: boolean;
   loaded: boolean;
-  data: TData;
+  data: TData | null;
   error: unknown;
   reload: () => void;
   clearCache: () => void;
@@ -57,13 +57,13 @@ export default class QueryManager<TData = unknown> {
     data: null,
     error: null,
     currentQuery: "",
-    reload: null,
-    clearCache: null,
-    clearCacheAndReload: null
+    reload: () => {},
+    clearCache: () => {},
+    clearCacheAndReload: () => {}
   };
   currentState: QueryState<TData>;
 
-  onMutation: FullSubscriptionEntry[]
+  onMutation: FullSubscriptionEntry[] = []
 
   constructor({ query, client, setState, cache }: QueryManagerOptions<TData>, options: Partial<QueryOptions<TData>>) {
     this.query = query;
@@ -134,7 +134,7 @@ export default class QueryManager<TData = unknown> {
 
     let graphqlQuery = this.currentUri;
     this.cache.getFromCache(
-      graphqlQuery!,
+      graphqlQuery,
       promise => {
         Promise.resolve(promise)
           .then(() => {

@@ -295,7 +295,7 @@ function generateTests(getClient: any, queryProps = () => ({}), mutationProps = 
     client.nextMutationResult = { updateBook: { Book: { id: 2, author: "Eve" } } };
     await get(mutationState).runMutation(null);
 
-    expect(componentsCache.entries.length).toBe(0); //cache is cleared!
+    expect(componentsCache.entries.length).toBe(0); //cache is cleared
     expect(get(queryState).data).toEqual({
       Books: [
         { id: 1, title: "Book 1", author: "Adam" },
@@ -526,7 +526,7 @@ function generateTests(getClient: any, queryProps = () => ({}), mutationProps = 
     client.nextMutationResult = { updateBook: { Book: { id: 2, author: "Eve" } } };
     await get(mutationState).runMutation(null);
 
-    expect(componentsCache.entries.length).toBe(0); //cache is cleared!
+    expect(componentsCache.entries.length).toBe(0); //cache is cleared
 
     expect(client.queriesRun).toBe(1);
 
