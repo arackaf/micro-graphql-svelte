@@ -1,12 +1,12 @@
 import { get } from "svelte/store";
 
-import { setDefaultClient, mutation, query, Cache } from "../src/index";
+import { setDefaultClient, mutation, query, Cache, Client } from "../src/index";
 import ClientMock from "./clientMock";
 import { dataPacket, deferred, pause, resolveDeferred } from "./testUtil";
 
-let client1;
-let client2;
-let sub;
+let client1: any;
+let client2: any;
+let sub: any;
 
 const LOAD_TASKS = "A";
 const LOAD_USERS = "B";
@@ -30,7 +30,7 @@ generateTests(
   () => ({ client: client2 })
 );
 
-function generateTests(name, getClient, queryProps = () => ({}), mutationProps = () => ({})) {
+function generateTests(name: any, getClient: any, queryProps = () => ({}), mutationProps = () => ({})) {
   test("client.forceUpdate works - " + name, async () => {
     const client = getClient();
     const { sync, queryState } = query(LOAD_TASKS, { ...queryProps() });
@@ -51,16 +51,16 @@ function generateTests(name, getClient, queryProps = () => ({}), mutationProps =
 
   test("force update from client mutation subscription -- string - " + name, async () => {
     var lastResults = null;
-    const client = getClient();
+    const client: Client = getClient();
     const { queryState, sync } = query(LOAD_TASKS, { ...queryProps() });
 
     client.subscribeMutation({
       when: "a",
       run: ({ refreshActiveQueries }) => {
-        let cache = client.getCache(LOAD_TASKS);
+        let cache: Cache<{ a: number }> = client.getCache(LOAD_TASKS);
 
         [...cache._cache.keys()].forEach(k => {
-          cache._cache.set(k, { data: { a: 99 } });
+          cache._cache.set(k, { data: { a: 99 }, error: null });
         });
 
         refreshActiveQueries(LOAD_TASKS);
@@ -69,8 +69,8 @@ function generateTests(name, getClient, queryProps = () => ({}), mutationProps =
     const { mutationState } = mutation("X", mutationProps());
     sub = queryState.subscribe(() => {});
 
-    client.nextMutationResult = { a: 2 };
-    client.nextResult = { data: { a: 1 } };
+    (client as any).nextMutationResult = { a: 2 };
+    (client as any).nextResult = { data: { a: 1 } };
 
     await sync({ assignedTo: null });
     expect(get(queryState).data).toEqual({ a: 1 });
@@ -80,7 +80,7 @@ function generateTests(name, getClient, queryProps = () => ({}), mutationProps =
   });
 
   test("force update from client mutation subscription -- regex - " + name, async () => {
-    const client = getClient();
+    const client: Client = getClient();
     var lastResults = null;
     const { sync, queryState } = query(LOAD_TASKS, { ...queryProps() });
     sub = queryState.subscribe(x => {});
@@ -93,14 +93,14 @@ function generateTests(name, getClient, queryProps = () => ({}), mutationProps =
         let cache = client.getCache(LOAD_TASKS);
 
         [...cache._cache.keys()].forEach(k => {
-          cache._cache.set(k, { data: { a: 99 } });
+          cache._cache.set(k, { data: { a: 99 }, error: null });
         });
 
         refreshActiveQueries(LOAD_TASKS);
       }
     });
-    client.nextMutationResult = { a: 2 };
-    client.nextResult = { data: { a: 1 } };
+    (client as any).nextMutationResult = { a: 2 };
+    (client as any).nextResult = { data: { a: 1 } };
 
     await sync({ assignedTo: 1 });
     expect(get(queryState).data).toEqual({ a: 1 });

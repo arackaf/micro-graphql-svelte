@@ -3,15 +3,15 @@ const queryString = require("query-string");
 
 export default class Client extends ClientBase {
   queriesRun = 0;
-  queryCalls = [];
+  queryCalls: any[] = [];
   mutationsRun = 0;
-  mutationCalls = [];
+  mutationCalls: any[] = [];
   nextResult: Promise<unknown> | unknown;
-  justWait: boolean;
+  justWait: boolean = false;
   nextMutationResult: unknown;
-  generateResponse: (query: string, variables: unknown) => Promise<unknown>;
+  generateResponse?: (query: string, variables: unknown) => Promise<unknown>;
 
-  constructor(props) {
+  constructor(props: any) {
     super(props);
     this.reset();
     this.endpoint = "";
@@ -29,7 +29,7 @@ export default class Client extends ClientBase {
     let variables = eval("(" + parsed.variables + ")");
     return this.runQuery(query, variables);
   };
-  runQuery = (query, variables): any => {
+  runQuery = (query: any, variables: any): any => {
     if (this.generateResponse) {
       this.nextResult = this.generateResponse(query, variables);
     } else if (this.justWait) {
@@ -39,7 +39,7 @@ export default class Client extends ClientBase {
     this.queryCalls.push([query, variables]);
     return this.nextResult || {};
   };
-  runMutation = (mutation, variables): any => {
+  runMutation = (mutation: any, variables: any): any => {
     this.mutationsRun++;
     this.mutationCalls.push([mutation, variables]);
     return this.nextMutationResult || {};

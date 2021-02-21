@@ -1,5 +1,25 @@
 import Cache, { DEFAULT_CACHE_SIZE } from "./cache";
-import { BasicSubscriptionEntry, ClientOptions, FullSubscriptionEntry, MinimalOnMutationPayload, OnMutationPayload, OnMutationQuerySetup, QueryPacket, SubscriptionEntry, SubscriptionItem } from "./queryTypes";
+import { BasicSubscriptionEntry, FullSubscriptionEntry, MinimalOnMutationPayload, OnMutationPayload, SubscriptionEntry, SubscriptionItem } from "./queryTypes";
+
+type QueryPacket = {
+  query: string;
+  variables: unknown;
+};
+
+type ClientOptions = {
+  endpoint: string;
+  cacheSize?: number;
+  noCaching?: boolean;
+};
+
+type OnMutationQuerySetup = {
+  cache: Cache;
+  softReset: (newResults: Object) => void;
+  hardReset: () => void;
+  refresh: () => void;
+  currentResults: () => unknown;
+  isActive: () => boolean;
+};
 
 export default class Client {
   private caches = new Map<string, Cache>();
@@ -51,10 +71,10 @@ export default class Client {
       },
       () => {
         let promise = this.runUri(graphqlQuery);
-        cache!.setPendingResult(graphqlQuery, promise);
+        cache.setPendingResult(graphqlQuery, promise);
         promiseResult = promise;
         promise.then(resp => {
-          cache!.setResults(promise, graphqlQuery, resp);
+          cache.setResults(promise, graphqlQuery, resp);
         });
       }
     );
@@ -112,9 +132,9 @@ export default class Client {
     if (!this.forceListeners.has(query)) {
       this.forceListeners.set(query, new Set([]));
     }
-    this.forceListeners.get(query)!.add(refresh);
+    this.forceListeners.get(query)?.add(refresh);
 
-    return () => this.forceListeners.get(query)!.delete(refresh);
+    return () => this.forceListeners.get(query)?.delete(refresh);
   }
   processMutation(mutation: string, variables: unknown) {
     return Promise.resolve(this.runMutation(mutation, variables)).then(resp => {
@@ -142,7 +162,7 @@ export default class Client {
       return resp;
     });
   }
-  private executeMutationSubscription(sub: SubscriptionEntry, options: OnMutationQuerySetup, resp: unknown, variables: unknown) {
+  private executeMutationSubscription(sub: SubscriptionEntry, options: OnMutationQuerySetup | undefined, resp: unknown, variables: unknown) {
     const refreshActiveQueries = (query: string) => this.forceUpdate(query);
 
     if (sub.type === "Basic") {
@@ -152,8 +172,8 @@ export default class Client {
       sub.run(basicArgs, resp, variables);
     } else {
       let fullArgs: OnMutationPayload = {
-        ...options,
-        currentResults: options.currentResults(),
+        ...(options as OnMutationQuerySetup),
+        currentResults: options!.currentResults(),
         refreshActiveQueries
       };
       sub.run(fullArgs, resp, variables);

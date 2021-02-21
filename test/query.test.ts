@@ -4,11 +4,11 @@ import { setDefaultClient, mutation, query, Cache } from "../src/index";
 import ClientMock from "./clientMock";
 import { dataPacket, deferred, errorPacket, loadingPacket, pause, rejectDeferred, resolveDeferred } from "./testUtil";
 
-let client1;
-let queryState;
-let sync;
-let sub;
-let p;
+let client1: any;
+let queryState: any;
+let sync: any;
+let sub: any;
+let p: any;
 
 beforeEach(() => {
   client1 = new ClientMock("endpoint1");

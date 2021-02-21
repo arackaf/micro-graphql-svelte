@@ -4,8 +4,8 @@ import { setDefaultClient, query, Cache } from "../src/index";
 import ClientMock from "./clientMock";
 import { dataPacket, deferred, pause, resolveDeferred } from "./testUtil";
 
-let client1;
-let client2;
+let client1: any;
+let client2: any;
 const basicQuery = "A";
 
 beforeEach(() => {

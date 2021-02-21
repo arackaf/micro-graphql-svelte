@@ -1,33 +1,13 @@
 import Cache from "./cache";
 
 export type GraphQLResponse<TData> = {
-  errors?: unknown;
-  data?: TData;
+  errors: unknown | null;
+  data: TData | null;
 };
 
 export type CachedEntry<TData> = {
-  error?: unknown;
-  data?: TData;
-};
-
-export type QueryPacket = {
-  query: string;
-  variables: unknown;
-};
-
-export type ClientOptions = {
-  endpoint: string;
-  cacheSize?: number;
-  noCaching?: boolean;
-};
-
-export type OnMutationQuerySetup = {
-  cache: Cache;
-  softReset: (newResults: Object) => void;
-  hardReset: () => void;
-  refresh: () => void;
-  currentResults: () => unknown;
-  isActive: () => boolean;
+  error: unknown | null;
+  data: TData | null;
 };
 
 export type MinimalOnMutationPayload = {

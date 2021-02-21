@@ -5,13 +5,13 @@ import ClientMock from "./clientMock";
 import { UpdateBookResult } from "./GraphQLTypes";
 import { dataPacket, deferred, pause, resolveDeferred } from "./testUtil";
 
-let client1;
-let client2;
-let sub;
+let client1: any;
+let client2: any;
+let sub: any;
 
 type BookResults = {
-  Books: { id: number }[]
-}
+  Books: { id: number }[];
+};
 
 beforeEach(() => {
   client1 = new ClientMock("endpoint1");
@@ -30,15 +30,15 @@ generateTests(
   () => ({ client: client2 })
 );
 
-function generateTests(getClient, queryProps = () => ({}), mutationProps = () => ({})) {
+function generateTests(getClient: any, queryProps = () => ({}), mutationProps = () => ({})) {
   test("Mutation listener updates cache X", async () => {
     const client = getClient();
-    const { queryState, sync } = query("A", {
+    const { queryState, sync } = query<BookResults>("A", {
       onMutation: {
         when: "updateBook",
         run: ({ cache }, { updateBook: { Book } }: UpdateBookResult, x: any) => {
-          cache.entries.forEach(([key, results]: any) => {
-            if (!(results instanceof Promise)) {
+          cache.entries.forEach(([key, results]) => {
+            if (!(results instanceof Promise) && results.data != null) {
               let CachedBook: any = results.data.Books.find(b => b.id == Book.id);
               CachedBook && Object.assign(CachedBook, Book);
             }
@@ -82,13 +82,15 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
 
   test("Mutation listener updates cache with mutation args - string", async () => {
     const client = getClient();
-    const { queryState, sync } = query("A", {
+    const { queryState, sync } = query<BookResults>("A", {
       onMutation: {
         when: "deleteBook",
         run: ({ cache, refresh }, resp, args: any) => {
-          cache.entries.forEach(([key, results]: any) => {
-            results.data.Books = results.data.Books.filter(b => b.id != args.id);
-            refresh();
+          cache.entries.forEach(([key, results]) => {
+            if (!(results instanceof Promise) && results.data != null) {
+              results.data.Books = results.data.Books.filter(b => b.id != args.id);
+              refresh();
+            }
           });
         }
       },
@@ -124,13 +126,15 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
 
   test("Mutation listener updates cache with mutation args - string - component gets new data", async () => {
     const client = getClient();
-    const { queryState, sync } = query("A", {
+    const { queryState, sync } = query<BookResults>("A", {
       onMutation: {
         when: "deleteBook",
         run: ({ cache, refresh }, resp, args: any) => {
-          cache.entries.forEach(([key, results]: any) => {
-            results.data.Books = results.data.Books.filter(b => b.id != args.id);
-            refresh();
+          cache.entries.forEach(([key, results]) => {
+            if (!(results instanceof Promise) && results.data != null) {
+              results.data.Books = results.data.Books.filter(b => b.id != args.id);
+              refresh();
+            }
           });
         }
       },
@@ -166,13 +170,15 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
 
   test("Mutation listener updates cache with mutation args - regex", async () => {
     const client = getClient();
-    const { queryState, sync } = query("A", {
+    const { queryState, sync } = query<BookResults>("A", {
       onMutation: {
         when: /deleteBook/,
         run: ({ cache, refresh }, resp, args: any) => {
-          cache.entries.forEach(([key, results]: any) => {
-            results.data.Books = results.data.Books.filter(b => b.id != args.id);
-            refresh();
+          cache.entries.forEach(([key, results]) => {
+            if (!(results instanceof Promise) && results.data != null) {
+              results.data.Books = results.data.Books.filter(b => b.id != args.id);
+              refresh();
+            }
           });
         }
       },
@@ -208,23 +214,25 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
 
   test("Mutation listener updates cache then refreshes from cache", async () => {
     const client = getClient();
-    const { queryState, sync } = query("A", {
+    const { queryState, sync } = query<BookResults>("A", {
       onMutation: {
         when: "updateBook",
         run: ({ cache, refresh }, { updateBook: { Book } }) => {
-          cache.entries.forEach(([key, results]: any) => {
-            let newBooks = results.data.Books.map(b => {
-              if (b.id == Book.id) {
-                return Object.assign({}, b, Book);
-              }
-              return b;
-            });
-            //do this immutable crap just to make sure tests don't accidentally pass because of object references to current props being updated - in real life the component would not be re-rendered, but here's we're verifying the props directly
-            let newResults = { ...results };
-            newResults.data = { ...newResults.data };
-            newResults.data.Books = newBooks;
-            cache.set(key, newResults);
-            refresh();
+          cache.entries.forEach(([key, results]) => {
+            if (!(results instanceof Promise) && results.data != null) {
+              let newBooks = results.data.Books.map(b => {
+                if (b.id == Book.id) {
+                  return Object.assign({}, b, Book);
+                }
+                return b;
+              });
+              //do this immutable crap just to make sure tests don't accidentally pass because of object references to current props being updated - in real life the component would not be re-rendered, but here's we're verifying the props directly
+              let newResults: any = { ...results };
+              newResults.data = { ...newResults.data };
+              newResults.data.Books = newBooks;
+              cache.set(key, newResults);
+              refresh();
+            }
           });
         }
       },
@@ -256,7 +264,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
   });
 
   test("Mutation listener - soft reset - props right, cache cleared", async () => {
-    let componentsCache;
+    let componentsCache: any;
 
     const client = getClient();
     const { queryState, sync } = query<BookResults>("A", {
@@ -440,7 +448,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
   });
 
   test("Mutation listener - hard reset - props right, cache cleared, client qeried", async () => {
-    let componentsCache;
+    let componentsCache: any;
     const client = getClient();
     const { queryState, sync } = query("A", {
       onMutation: {
@@ -488,7 +496,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
   });
 
   test("Mutation listener - new component, re-queries", async () => {
-    let componentsCache;
+    let componentsCache: any;
     const client = getClient();
     const { queryState, sync } = query<BookResults>("A", {
       onMutation: {

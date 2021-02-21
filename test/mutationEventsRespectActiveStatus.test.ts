@@ -4,9 +4,9 @@ import { setDefaultClient, mutation, query, Cache } from "../src/index";
 import ClientMock from "./clientMock";
 import { dataPacket, deferred, pause, resolveDeferred } from "./testUtil";
 
-let client1;
-let client2;
-let sub;
+let client1: any;
+let client2: any;
+let sub: any;
 
 type BookResultsType = { Books: { id: number }[] };
 type BookArgs = { id: number };
@@ -28,7 +28,7 @@ generateTests(
   () => ({ client: client2 })
 );
 
-function generateTests(getClient, queryProps = () => ({}), mutationProps = () => ({})) {
+function generateTests(getClient: any, queryProps = () => ({}), mutationProps = () => ({})) {
   test("Mutation listener updates cache X", async () => {
     const client = getClient();
     const { queryState, sync } = query<BookResultsType>("A", {
@@ -36,7 +36,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
         when: "updateBook",
         run: ({ cache }, { updateBook: { Book } }) => {
           cache.entries.forEach(([key, results]) => {
-            if (!(results instanceof Promise)) {
+            if (!(results instanceof Promise) && results.data != null) {
               let CachedBook = results.data.Books.find(b => b.id == Book.id);
               CachedBook && Object.assign(CachedBook, Book);
             }
@@ -86,7 +86,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
         when: "deleteBook",
         run: ({ cache, refresh }, resp, args: BookArgs) => {
           cache.entries.forEach(([key, results]) => {
-            if (!(results instanceof Promise)) {
+            if (!(results instanceof Promise) && results.data != null) {
               results.data.Books = results.data.Books.filter(b => b.id != args.id);
               refresh();
             }
@@ -131,7 +131,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
         when: /deleteBook/,
         run: ({ cache, refresh }, resp, args: BookArgs) => {
           cache.entries.forEach(([key, results]) => {
-            if (!(results instanceof Promise)) {
+            if (!(results instanceof Promise) && results.data != null) {
               results.data.Books = results.data.Books.filter(b => b.id != args.id);
               refresh();
             }
@@ -176,7 +176,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
         when: "updateBook",
         run: ({ cache, refresh }, { updateBook: { Book } }) => {
           cache.entries.forEach(([key, results]) => {
-            if (!(results instanceof Promise)) {
+            if (!(results instanceof Promise) && results.data != null) {
               let newBooks = results.data.Books.map(b => {
                 if (b.id == Book.id) {
                   return Object.assign({}, b, Book);
@@ -184,7 +184,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
                 return b;
               });
               //do this immutable crap just to make sure tests don't accidentally pass because of object references to current props being updated - in real life the component would not be re-rendered, but here's we're verifying the props directly
-              let newResults = { ...results };
+              let newResults: any = { ...results };
               newResults.data = { ...newResults.data };
               newResults.data.Books = newBooks;
               cache.set(key, newResults);
@@ -224,7 +224,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
         when: "updateBook",
         run: ({ cache, refresh }, { updateBook: { Book } }) => {
           cache.entries.forEach(([key, results]) => {
-            if (!(results instanceof Promise)) {
+            if (!(results instanceof Promise) && results.data != null) {
               let newBooks = results.data.Books.map(b => {
                 if (b.id == Book.id) {
                   return Object.assign({}, b, Book);
@@ -232,7 +232,7 @@ function generateTests(getClient, queryProps = () => ({}), mutationProps = () =>
                 return b;
               });
               //do this immutable crap just to make sure tests don't accidentally pass because of object references to current props being updated - in real life the component would not be re-rendered, but here's we're verifying the props directly
-              let newResults = { ...results };
+              let newResults: any = { ...results };
               newResults.data = { ...newResults.data };
               newResults.data.Books = newBooks;
               cache.set(key, newResults);

@@ -7,7 +7,7 @@ import { dataPacket, deferred, pause, resolveDeferred } from "./testUtil";
 const queryA = "A";
 const queryB = "B";
 
-let client1;
+let client1: any;
 
 beforeEach(() => {
   client1 = new ClientMock("endpoint1");
