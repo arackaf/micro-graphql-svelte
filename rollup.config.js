@@ -5,7 +5,7 @@ const { terser } = require("rollup-plugin-terser");
 const path = require("path");
 
 const getConfig = ({ file, minify = false, presets = [], plugins = [] }) => ({
-  input: "./src/index.js",
+  input: "./lib/index.js",
   output: {
     format: "esm",
     file

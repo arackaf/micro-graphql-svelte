@@ -1,7 +1,8 @@
-demo
 .vscode
 .git
+component-test-backup
+coverage
 demo
-dist
-graphQL
-graphql-definitions
+docs
+node_modules
+test
