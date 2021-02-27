@@ -3,10 +3,10 @@ import Client from "./client";
 import Cache from "./cache";
 import { FullSubscriptionEntry, FullSubscriptionItem, GraphQLResponse } from "./queryTypes";
 
-export type QueryOptions<TData = unknown> = {
+export type QueryOptions<TData, TArgs> = {
   client: Client;
   cache?: Cache<TData>;
-  initialSearch?: string;
+  initialSearch?: TArgs;
   activate?: (store: Writable<QueryState<TData>>) => void;
   deactivate?: (store: Writable<QueryState<TData>>) => void;
   postProcess?: (resp: unknown) => unknown;
@@ -36,7 +36,7 @@ type QueryManagerOptions<TData = unknown> = {
   cache?: Cache<TData>;
 }
 
-export default class QueryManager<TData = unknown> {
+export default class QueryManager<TData, TArgs> {
   query: string;
   client: Client;
   active = true;
@@ -65,7 +65,7 @@ export default class QueryManager<TData = unknown> {
 
   onMutation: FullSubscriptionEntry[] = []
 
-  constructor({ query, client, setState, cache }: QueryManagerOptions<TData>, options: Partial<QueryOptions<TData>>) {
+  constructor({ query, client, setState, cache }: QueryManagerOptions<TData>, options: Partial<QueryOptions<TData, TArgs>>) {
     this.query = query;
     this.client = client;
     this.setState = setState;
@@ -95,8 +95,8 @@ export default class QueryManager<TData = unknown> {
   refresh = () => {
     this.load();
   };
-  softReset = (newResults: unknown) => {
-    if (newResults) {
+  softReset = (newResults?: unknown) => {
+    if (newResults != null) {
       this.updateState({ data: newResults });
     }
     this.cache.clearCache();

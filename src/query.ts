@@ -3,8 +3,8 @@ import Client, { defaultClientManager } from "./client";
 
 import QueryManager, { QueryLoadOptions, QueryOptions, QueryState } from "./queryManager";
 
-export default function query<TResults = unknown>(query: string, options: Partial<QueryOptions<TResults>> = {}) {
-  let queryManager: QueryManager<TResults>;
+export default function query<TResults = unknown, TArgs = unknown>(query: string, options: Partial<QueryOptions<TResults, TArgs>> = {}) {
+  let queryManager: QueryManager<TResults, TArgs>;
   const queryStore = writable<QueryState<TResults>>(QueryManager.initialState, () => {
     options.activate && options.activate(queryStore);
     queryManager.activate();
@@ -19,7 +19,7 @@ export default function query<TResults = unknown>(query: string, options: Partia
     throw "Default Client not configured";
   }
   
-  queryManager = new QueryManager<TResults>({ query, client, cache: options?.cache, setState: queryStore.set }, options);
+  queryManager = new QueryManager<TResults, TArgs>({ query, client, cache: options?.cache, setState: queryStore.set }, options);
   const sync = (variables: unknown, options?: QueryLoadOptions) => queryManager.load([query, variables], options);
 
   if (options.initialSearch) {
