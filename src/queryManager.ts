@@ -9,8 +9,8 @@ export type QueryOptions<TData = unknown> = {
   initialSearch?: string;
   activate?: (store: Writable<QueryState<TData>>) => void;
   deactivate?: (store: Writable<QueryState<TData>>) => void;
-  postProcess: (resp: unknown) => unknown;
-  onMutation: FullSubscriptionItem<TData> | FullSubscriptionItem<TData>[]
+  postProcess?: (resp: unknown) => unknown;
+  onMutation?: FullSubscriptionItem<TData> | FullSubscriptionItem<TData>[]
 }
 
 export type QueryState<TData = unknown> = {
@@ -24,10 +24,10 @@ export type QueryState<TData = unknown> = {
   currentQuery: string;
 }
 
-export type QueryLoadOptions = {
-  force?: boolean;
-  active?: boolean;
-}
+export type QueryLoadOptions = Partial<{
+  force: boolean;
+  active: boolean;
+}>
 
 type QueryManagerOptions<TData = unknown> = {
   query: string;
