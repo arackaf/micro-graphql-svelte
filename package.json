@@ -76,9 +76,9 @@
     "sizeCheck": "rollup -c && gzip index.min.js && stat index.min.js.gz && rm -f index.min.js.gz",
     "tsc": "tsc --noEmit",
     "tscw": "tsc -w --noEmit",
-    "compile-ts": "tsc --project tsconfig.release.json --outDir ./lib"
+    "compile-ts": "tsc -d --project tsconfig.release.json --outDir ./lib"
   },
   "dependencies": {},
   "sideEffects": false,
-  "typings": "index.d.ts"
+  "typings": "lib/index.d.ts"
 }

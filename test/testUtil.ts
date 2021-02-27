@@ -9,13 +9,13 @@ export const deferred = () => {
   return p;
 };
 
-export const resolveDeferred = async (p: any, val: any, wrapper: any) => {
+export const resolveDeferred = async (p: any, val: any, wrapper?: any) => {
   p.resolve(val);
   await p;
   wrapper && wrapper.update();
 };
 
-export const rejectDeferred = async (p: any, val: any, wrapper: any) => {
+export const rejectDeferred = async (p: any, val: any, wrapper?: any) => {
   try {
     p.reject(val);
   } catch (er) {}
@@ -53,7 +53,7 @@ export const errorPacket = (error: any) => ({
   data: null,
 });
 
-export const pause = (wrapper: any) =>
+export const pause = (wrapper?: any) =>
   new Promise((res: any) =>
     setTimeout(() => {
       wrapper && wrapper.update();
