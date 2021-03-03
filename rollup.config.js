@@ -5,7 +5,7 @@ const { terser } = require("rollup-plugin-terser");
 const path = require("path");
 
 const getConfig = ({ file, minify = false, presets = [], plugins = [] }) => ({
-  input: "./src/index.js",
+  input: "./lib/index.js",
   output: {
     format: "esm",
     file
@@ -16,7 +16,7 @@ const getConfig = ({ file, minify = false, presets = [], plugins = [] }) => ({
       babelrc: false,
       exclude: "node_modules/**",
       presets: [...presets],
-      plugins: ["@babel/plugin-proposal-class-properties", ...plugins]
+      plugins: ["@babel/plugin-proposal-class-properties", "@babel/plugin-proposal-optional-chaining", ...plugins]
     }),
     minify && terser({}),
     resolve({}),
