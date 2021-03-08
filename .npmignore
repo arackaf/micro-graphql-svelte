@@ -1,8 +1,12 @@
-.vscode
+.babelrc
 .git
+.travis.yml
+.vscode
 component-test-backup
 coverage
 demo
 docs
+jest.config.js
 node_modules
+rollup.config.js
 test
