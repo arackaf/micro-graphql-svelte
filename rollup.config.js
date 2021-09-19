@@ -10,7 +10,7 @@ const getConfig = ({ file, minify = false, presets = [], plugins = [] }) => ({
     format: "esm",
     file
   },
-  external: [],
+  external: ["svelte", "svelte/store"],
   plugins: [
     babel({
       babelrc: false,
@@ -19,7 +19,7 @@ const getConfig = ({ file, minify = false, presets = [], plugins = [] }) => ({
       plugins: ["@babel/plugin-proposal-class-properties", "@babel/plugin-proposal-optional-chaining", ...plugins]
     }),
     minify && terser({}),
-    resolve({}),
+    resolve(),
     commonjs({ include: ["node_modules/**"] })
   ]
 });
