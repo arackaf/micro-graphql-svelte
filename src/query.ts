@@ -37,7 +37,7 @@ export default function query<TResults = unknown, TArgs = unknown>(query: string
 
   return {
     queryState: derived(queryStore, $state => ({ ...$state, softReset: queryManager.softReset })),
-    resultsState: resultsStore,
+    resultsState: derived(resultsStore, $state => $state),
     sync
   };
 }
