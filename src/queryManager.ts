@@ -32,7 +32,7 @@ export type QueryLoadOptions = Partial<{
 type QueryManagerOptions<TData = unknown> = {
   query: string;
   client: Client;
-  setState: (newState: QueryState<TData>) => void;
+  setState: (newState: Partial<QueryState<TData>>) => void;
   cache?: Cache<TData>;
 };
 
@@ -40,7 +40,7 @@ export default class QueryManager<TData, TArgs> {
   query: string;
   client: Client;
   active = true;
-  setState: (newState: QueryState<TData>) => void;
+  setState: (newState: Partial<QueryState<TData>>) => void;
   options: any;
   cache: Cache<TData>;
   postProcess?: (resp: unknown) => unknown;
@@ -88,14 +88,14 @@ export default class QueryManager<TData, TArgs> {
     };
   }
   isActive = () => this.active;
-  updateState = (newState: Partial<QueryState>) => {
+  updateState = (newState: Partial<QueryState<TData>>) => {
     Object.assign(this.currentState, newState);
-    this.setState(Object.assign({}, this.currentState));
+    this.setState(newState);
   };
   refresh = () => {
     this.load();
   };
-  softReset = (newResults?: unknown) => {
+  softReset = (newResults?: TData) => {
     if (newResults != null) {
       this.updateState({ data: newResults });
     }
@@ -189,7 +189,7 @@ export default class QueryManager<TData, TArgs> {
     if (typeof this.options.onMutation === "object") {
       this.mutationSubscription = this.client.subscribeQuery(this.onMutation, {
         cache: this.cache,
-        softReset: this.softReset,
+        softReset: this.softReset as (data: Object) => void,
         hardReset: this.hardReset,
         refresh: this.refresh,
         currentResults: () => this.currentState.data,

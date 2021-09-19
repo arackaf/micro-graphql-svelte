@@ -1,12 +1,12 @@
 import Cache from "./cache";
 
 export type GraphQLResponse<TData> = {
-  errors: unknown | null;
+  errors: Object[] | null;
   data: TData | null;
 };
 
 export type CachedEntry<TData> = {
-  error: unknown | null;
+  error: Object | Object[] | null;
   data: TData | null;
 };
 

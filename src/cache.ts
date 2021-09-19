@@ -42,7 +42,7 @@ export default class Cache<TData = unknown> {
     }
   }
 
-  setResults(promise: Promise<unknown>, cacheKey: string, resp?: GraphQLResponse<TData>, err: unknown = null) {
+  setResults(promise: Promise<unknown>, cacheKey: string, resp?: GraphQLResponse<TData>, err: Object | null = null) {
     let cache = this._cache;
     if (this.noCaching) {
       return;
@@ -63,7 +63,7 @@ export default class Cache<TData = unknown> {
     }
   }
 
-  getFromCache(key: string, ifPending: (p: Promise<unknown>) => void, ifResults: (entry: CachedEntry<unknown>) => void, ifNotFound: () => void) {
+  getFromCache(key: string, ifPending: (p: Promise<unknown>) => void, ifResults: (entry: CachedEntry<TData>) => void, ifNotFound: () => void) {
     let cache = this._cache;
     if (this.noCaching) {
       ifNotFound();

@@ -97,7 +97,7 @@ client.preload(YourQuery, variables);
 ```js
 import { query } from "micro-graphql-svelte";
 
-let { queryState, sync } = query(YOUR_QUERY);
+let { queryState, resultsState, sync } = query(YOUR_QUERY);
 $: booksSync($searchState);
 ```
 
@@ -142,6 +142,10 @@ The `queryState` store has the following properties
 |`clearCache`|`function`: Clear the cache for this query|
 | `softReset` |`function`: Clears the cache, but does **not** re-issue any queries. It can optionally take an argument of new, updated results, which will replace the current `data` props |
 | `hardReset` |`function`: Clears the cache, and re-load the current query from the network|
+
+The `resultsState` store contains the current query's results. This store stays in sync with `$queryState.data`.
+
+If you want to run code when the current query's results, and **only** the current query's results changes, use this store.
 
 ### Mutations
 
