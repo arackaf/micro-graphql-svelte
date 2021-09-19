@@ -124,7 +124,9 @@ The options argument, if supplied, can contain these properties
 
 Be sure to use the `compress` tag to remove un-needed whitespace from your query text, since it will be sent via HTTP GET—for more information, see [here](./compress). An even better option would be to use my [persisted queries helper](https://github.com/arackaf/generic-persistgraphql). This not only removes the entire query text from your network requests altogether, but also from your bundled code.
 
-`query` returns an object with a `queryState` property, which will be a store with your query's current results, as well as a `sync` function, which you can call anytime to update the query's current variables. Your query will not actually run until you've called sync. If your query does not need any variables, just call it immediately with an empty object.
+`query` returns an object with the following properties: `queryState`, a store with your query's current results; a `sync` function, which you can call anytime to update the query's current variables; and `resultsState`, a store with just the current query's actual data results—in other words a straight projection of `$queryState.data`. Your query will not actually run until you've called sync. If your query does not need any variables, just call it immediately with an empty object, or supply an `initialSearch` value (see above).
+
+If you need to run code when the current query's results (ie `data`), and **only** the current query's results changes, use the `resultsState` store in your component, since reactive blocks referencing `$resultsState` will frequently fire even when `data` has not changed, for example when `loading` has been set to true.
 
 ### Query results
 
@@ -142,10 +144,6 @@ The `queryState` store has the following properties
 |`clearCache`|`function`: Clear the cache for this query|
 | `softReset` |`function`: Clears the cache, but does **not** re-issue any queries. It can optionally take an argument of new, updated results, which will replace the current `data` props |
 | `hardReset` |`function`: Clears the cache, and re-load the current query from the network|
-
-The `resultsState` store contains the current query's results. This store stays in sync with `$queryState.data`.
-
-If you want to run code when the current query's results, and **only** the current query's results changes, use this store.
 
 ### Mutations
 
