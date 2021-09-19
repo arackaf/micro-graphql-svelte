@@ -5,14 +5,14 @@ import { MutationState } from "./mutationTypes";
 
 type MutationOptions = {
   client: Client;
-}
+};
 
 export default class MutationManager<TResults> {
   client: Client;
   mutation: string;
   setState: (newState: MutationState<TResults>) => void;
   mutationStore: Writable<MutationState<TResults>>;
-  
+
   runMutation = (variables: unknown) => {
     this.setState({
       running: true,

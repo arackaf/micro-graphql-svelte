@@ -1,4 +1,4 @@
-import { GraphQLResponse, CachedEntry } from "./queryTypes"
+import { GraphQLResponse, CachedEntry } from "./queryTypes";
 
 export default class Cache<TData = unknown> {
   constructor(private cacheSize = DEFAULT_CACHE_SIZE) {

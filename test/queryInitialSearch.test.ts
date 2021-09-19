@@ -14,14 +14,13 @@ beforeEach(() => {
   client1 = new ClientMock("endpoint1");
   setDefaultClient(client1);
   p = client1.nextResult = deferred();
-
 });
 
 afterEach(() => {
   sub();
 });
 
-function initialState(initialSearch: any){
+function initialState(initialSearch: any) {
   ({ queryState, sync } = query("A", { initialSearch }));
   sub = queryState.subscribe(() => {});
 }

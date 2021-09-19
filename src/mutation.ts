@@ -6,9 +6,12 @@ import { MutationState } from "./mutationTypes";
 
 type MutationOptions = {
   client?: Client;
-}
+};
 
-export default function mutation<TResults = unknown>(mutation: string, options: MutationOptions = {}): { mutationState: Readable<MutationState<TResults>> } {
+export default function mutation<TResults = unknown>(
+  mutation: string,
+  options: MutationOptions = {}
+): { mutationState: Readable<MutationState<TResults>> } {
   const client = options.client || defaultClientManager.getDefaultClient();
 
   if (client == null) {

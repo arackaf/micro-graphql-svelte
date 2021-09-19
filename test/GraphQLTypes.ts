@@ -5,5 +5,5 @@ export interface Book {
 export interface UpdateBookResult {
   updateBook: {
     Book: Book;
-  }
+  };
 }

@@ -29,28 +29,28 @@ export const defaultPacket = {
   loading: false,
   loaded: false,
   data: null,
-  error: null,
+  error: null
 };
 
 export const loadingPacket = {
   loading: true,
   loaded: false,
   data: null,
-  error: null,
+  error: null
 };
 
 export const dataPacket = (data: any) => ({
   loading: false,
   loaded: true,
   error: null,
-  data,
+  data
 });
 
 export const errorPacket = (error: any) => ({
   loading: false,
   loaded: true,
   error,
-  data: null,
+  data: null
 });
 
 export const pause = (wrapper?: any) =>

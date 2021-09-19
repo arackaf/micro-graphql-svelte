@@ -18,7 +18,7 @@ export default function query<TResults = unknown, TArgs = unknown>(query: string
   if (client == null) {
     throw "Default Client not configured";
   }
-  
+
   queryManager = new QueryManager<TResults, TArgs>({ query, client, cache: options?.cache, setState: queryStore.set }, options);
   const sync = (variables: unknown, options?: QueryLoadOptions) => queryManager.load([query, variables], options);
 

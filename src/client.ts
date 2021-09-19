@@ -1,5 +1,12 @@
 import Cache, { DEFAULT_CACHE_SIZE } from "./cache";
-import { BasicSubscriptionEntry, FullSubscriptionEntry, MinimalOnMutationPayload, OnMutationPayload, SubscriptionEntry, SubscriptionItem } from "./queryTypes";
+import {
+  BasicSubscriptionEntry,
+  FullSubscriptionEntry,
+  MinimalOnMutationPayload,
+  OnMutationPayload,
+  SubscriptionEntry,
+  SubscriptionItem
+} from "./queryTypes";
 
 type QueryPacket = {
   query: string;

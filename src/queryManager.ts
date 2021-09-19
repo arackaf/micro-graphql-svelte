@@ -10,8 +10,8 @@ export type QueryOptions<TData, TArgs> = {
   activate?: (store: Writable<QueryState<TData>>) => void;
   deactivate?: (store: Writable<QueryState<TData>>) => void;
   postProcess?: (resp: unknown) => unknown;
-  onMutation?: FullSubscriptionItem<TData> | FullSubscriptionItem<TData>[]
-}
+  onMutation?: FullSubscriptionItem<TData> | FullSubscriptionItem<TData>[];
+};
 
 export type QueryState<TData = unknown> = {
   loading: boolean;
@@ -22,19 +22,19 @@ export type QueryState<TData = unknown> = {
   clearCache: () => void;
   clearCacheAndReload: () => void;
   currentQuery: string;
-}
+};
 
 export type QueryLoadOptions = Partial<{
   force: boolean;
   active: boolean;
-}>
+}>;
 
 type QueryManagerOptions<TData = unknown> = {
   query: string;
   client: Client;
   setState: (newState: QueryState<TData>) => void;
   cache?: Cache<TData>;
-}
+};
 
 export default class QueryManager<TData, TArgs> {
   query: string;
@@ -63,7 +63,7 @@ export default class QueryManager<TData, TArgs> {
   };
   currentState: QueryState<TData>;
 
-  onMutation: FullSubscriptionEntry[] = []
+  onMutation: FullSubscriptionEntry[] = [];
 
   constructor({ query, client, setState, cache }: QueryManagerOptions<TData>, options: Partial<QueryOptions<TData, TArgs>>) {
     this.query = query;
@@ -84,7 +84,7 @@ export default class QueryManager<TData, TArgs> {
       ...QueryManager.initialState,
       reload: this.reload,
       clearCache: () => this.cache.clearCache(),
-      clearCacheAndReload: this.clearCacheAndReload,
+      clearCacheAndReload: this.clearCacheAndReload
     };
   }
   isActive = () => this.active;

@@ -51,7 +51,7 @@ test("Basic query re-fires for prop change", () => {
   expect(client1.queriesRun).toBe(2);
   expect(client1.queryCalls).toEqual([
     [queryA, { a: 1 }],
-    [queryA, { a: 2 }],
+    [queryA, { a: 2 }]
   ]);
 });
 
@@ -67,7 +67,7 @@ test("Basic query hits cache", () => {
   expect(client1.queriesRun).toBe(2);
   expect(client1.queryCalls).toEqual([
     [queryA, { a: 1 }],
-    [queryA, { a: 2 }],
+    [queryA, { a: 2 }]
   ]);
 });
 
@@ -83,7 +83,7 @@ test("Run two queries", () => {
   expect(client1.queriesRun).toBe(2);
   expect(client1.queryCalls).toEqual([
     [queryA, { a: 1 }],
-    [queryB, { b: 2 }],
+    [queryB, { b: 2 }]
   ]);
 });
 
@@ -97,7 +97,7 @@ test("Run two queries second updates", () => {
   expect(client1.queriesRun).toBe(2);
   expect(client1.queryCalls).toEqual([
     [queryA, { a: 1 }],
-    [queryB, { b: 2 }],
+    [queryB, { b: 2 }]
   ]);
 
   syncA({ a: 1 });
@@ -107,7 +107,7 @@ test("Run two queries second updates", () => {
   expect(client1.queryCalls).toEqual([
     [queryA, { a: 1 }],
     [queryB, { b: 2 }],
-    [queryB, { b: "2a" }],
+    [queryB, { b: "2a" }]
   ]);
 });
 
@@ -121,7 +121,7 @@ test("Run two queries second updates, then hits cache", () => {
   expect(client1.queriesRun).toBe(2);
   expect(client1.queryCalls).toEqual([
     [queryA, { a: 1 }],
-    [queryB, { b: 2 }],
+    [queryB, { b: 2 }]
   ]);
 
   syncA({ a: 1 });
@@ -131,7 +131,7 @@ test("Run two queries second updates, then hits cache", () => {
   expect(client1.queryCalls).toEqual([
     [queryA, { a: 1 }],
     [queryB, { b: 2 }],
-    [queryB, { b: "2a" }],
+    [queryB, { b: "2a" }]
   ]);
 
   syncA({ a: 1 });
@@ -141,7 +141,7 @@ test("Run two queries second updates, then hits cache", () => {
   expect(client1.queryCalls).toEqual([
     [queryA, { a: 1 }],
     [queryB, { b: 2 }],
-    [queryB, { b: "2a" }],
+    [queryB, { b: "2a" }]
   ]);
 });
 
@@ -155,7 +155,7 @@ test("Run two queries with identical prop 'changes'", () => {
   expect(client1.queriesRun).toBe(2);
   expect(client1.queryCalls).toEqual([
     [queryA, { a: 1 }],
-    [queryB, { b: 2 }],
+    [queryB, { b: 2 }]
   ]);
 
   syncA({ a: 1 });
@@ -164,6 +164,6 @@ test("Run two queries with identical prop 'changes'", () => {
   expect(client1.queriesRun).toBe(2);
   expect(client1.queryCalls).toEqual([
     [queryA, { a: 1 }],
-    [queryB, { b: 2 }],
+    [queryB, { b: 2 }]
   ]);
 });
