@@ -13,6 +13,7 @@ export default function query<TResults = unknown, TArgs = unknown>(query: string
       queryManager.dispose();
     };
   });
+  const resultsStore = writable<TResults | null>(null);
 
   const client: Client | null = options.client || defaultClientManager.getDefaultClient();
   if (client == null) {
@@ -22,6 +23,9 @@ export default function query<TResults = unknown, TArgs = unknown>(query: string
   const setState = (newState: any) => {
     const existingState = queryManager.currentState;
     queryStore.set(Object.assign({}, existingState, newState));
+    if ("data" in newState) {
+      resultsStore.set(newState.data);
+    }
   };
 
   queryManager = new QueryManager<TResults, TArgs>({ query, client, cache: options?.cache, setState }, options);
@@ -33,6 +37,7 @@ export default function query<TResults = unknown, TArgs = unknown>(query: string
 
   return {
     queryState: derived(queryStore, $state => ({ ...$state, softReset: queryManager.softReset })),
+    resultsState: resultsStore,
     sync
   };
 }
