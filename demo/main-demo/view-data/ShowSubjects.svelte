@@ -1,16 +1,9 @@
 <script>
-  import EditSubject from "./EditSubject";
+  import EditSubject from "./EditSubject.svelte";
   export let data;
 
   let editingSubject;
 </script>
-
-<style>
-  li {
-    list-style-type: none;
-    margin-bottom: 10px;
-  }
-</style>
 
 {#if editingSubject}
   <EditSubject subject={editingSubject} onCancel={() => (editingSubject = null)} />
@@ -25,3 +18,10 @@
     <li>{subject.name} <button on:click={() => (editingSubject = subject)}>Edit</button></li>
   {/each}
 </ul>
+
+<style>
+  li {
+    list-style-type: none;
+    margin-bottom: 10px;
+  }
+</style>

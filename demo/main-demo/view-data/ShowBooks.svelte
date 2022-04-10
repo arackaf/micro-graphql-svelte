@@ -1,5 +1,5 @@
 <script>
-  import EditBook from "./EditBook";
+  import EditBook from "./EditBook.svelte";
 
   export let data;
   let editingBook;
@@ -27,7 +27,7 @@
       <tr>
         <td><img src={book.smallImage} alt="" /></td>
         <td>{book.title}</td>
-        <td>{book.authors.join(', ')}</td>
+        <td>{book.authors.join(", ")}</td>
         <td><button on:click={() => (editingBook = book)}>Edit</button></td>
       </tr>
     {/each}

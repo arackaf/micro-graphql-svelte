@@ -1,4 +1,4 @@
-import App from "./App";
+import App from "./App.svelte";
 
 import { Client, setDefaultClient } from "../src/index";
 
@@ -10,6 +10,6 @@ const client = new Client({
 setDefaultClient(client);
 
 const app = new App({
-	target: document.getElementById("home"),
-	props: {}
+  target: document.getElementById("home"),
+  props: {}
 });

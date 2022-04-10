@@ -2,16 +2,16 @@
   import { getSearchState, history, setSearchValues } from "./util/history-utils";
   import { onDestroy, setContext } from "svelte";
 
-  import HardReset from "./view-data/HardReset";
-  import SoftReset from "./view-data/SoftReset";
-  import CacheMutation from "./view-data/CacheMutation";
+  import HardReset from "./view-data/HardReset.svelte";
+  import SoftReset from "./view-data/SoftReset.svelte";
+  import CacheMutation from "./view-data/CacheMutation.svelte";
   import { writable } from "svelte/store";
-  import BasicCodeSandbox from "./BasicCodeSandbox";
+  import BasicCodeSandbox from "./BasicCodeSandbox.svelte";
 
   let inputEl;
   const searchStateStore = writable(getSearchState());
   setContext("search_params", searchStateStore);
-  const historySub = history.listen(() => (searchStateStore.set(getSearchState())));
+  const historySub = history.listen(() => searchStateStore.set(getSearchState()));
 
   const searchTyped = evt => {
     if (evt.keyCode == 13) {
