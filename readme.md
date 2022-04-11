@@ -6,7 +6,7 @@
 
 ---
 
-A light (2.6K min+gzip) and simple solution for painlessly connecting your Svelte components to a GraphQL endpoint.
+A light (2.8K min+gzip) and simple solution for painlessly connecting your Svelte components to a GraphQL endpoint.
 
 This project has a query and mutation function to produce a store with your query's data, or mutation info. Where this project differs from most others is how it approaches cache invalidation. Rather than adding metadata to queries and forming a normalized, automatically-managed cache, it instead provides simple, low-level building blocks to handle cache management yourself. The reason for this (ostensibly poor!) tradeoff is because of my experience with other GraphQL clients which attempted the normalized cache route. I consistently had difficulty getting the cache to behave exactly as I wanted, so decided to build a GraphQL client that gave me the low-level control I always wound up wanting. This project is the result.
 
